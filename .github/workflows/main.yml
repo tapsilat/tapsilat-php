@@ -131,7 +131,7 @@ jobs:
           echo "Packagist API Response: $RESPONSE_BODY"
           echo "HTTP Status: $HTTP_STATUS"
           
-          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ]; then
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 202 ]; then
             echo "✅ Successfully triggered Packagist update"
           else
             echo "❌ Failed to trigger Packagist update (HTTP Status: $HTTP_STATUS)"
@@ -219,7 +219,7 @@ jobs:
           echo "Packagist API Response: $RESPONSE_BODY"
           echo "HTTP Status: $HTTP_STATUS"
           
-          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ]; then
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 202 ]; then
             echo "✅ Successfully notified Packagist of repository update"
           else
             echo "❌ Failed to notify Packagist (HTTP Status: $HTTP_STATUS)"
