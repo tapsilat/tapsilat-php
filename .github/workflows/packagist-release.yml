@@ -1,0 +1,66 @@
+name: Publish to Packagist
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          coverage: none
+          
+      - name: Validate composer.json
+        run: composer validate --strict
+        
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+            
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+        
+      - name: Run tests
+        run: composer test
+        
+      - name: Build package
+        run: composer install --no-dev --optimize-autoloader
+        
+      - name: Publish to Packagist
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.PACKAGIST_TOKEN }}" \
+            -d '{"repository":{"url":"https://github.com/tapsilat/tapsilat-php"}}' \
+            https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}
+        
+      - name: Verify package on Packagist
+        run: |
+          echo "Waiting for Packagist to process the package..."
+          sleep 30
+          
+          # Check if package is available on Packagist
+          PACKAGE_URL="https://packagist.org/packages/tapsilat/tapsilat-php"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PACKAGE_URL")
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Package successfully published to Packagist!"
+            echo "Package URL: $PACKAGE_URL"
+          else
+            echo "❌ Package not found on Packagist (HTTP Status: $HTTP_STATUS)"
+            exit 1
+          fi 
