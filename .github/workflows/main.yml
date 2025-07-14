@@ -54,7 +54,6 @@ jobs:
   release-and-publish:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    needs: []
     
     steps:
       - name: Checkout code
@@ -124,7 +123,6 @@ jobs:
           asset_content_type: application/zip
           
       - name: Publish to Packagist
-        if: secrets.PACKAGIST_TOKEN != ''
         run: |
           echo "Publishing package to Packagist..."
           RESPONSE=$(curl -s -w "%{http_code}" -X POST \
@@ -147,14 +145,7 @@ jobs:
             exit 1
           fi
         
-      - name: Skip Packagist Publishing
-        if: secrets.PACKAGIST_TOKEN == ''
-        run: |
-          echo "⚠️ PACKAGIST_TOKEN not configured, skipping Packagist publishing"
-          echo "📝 See PACKAGIST_SETUP.md for setup instructions"
-          
       - name: Verify package on Packagist
-        if: secrets.PACKAGIST_TOKEN != ''
         run: |
           echo "Waiting for Packagist to process the package..."
           sleep 30
@@ -190,7 +181,7 @@ jobs:
   packagist-webhook:
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    needs: []
+
     
     steps:
       - name: Checkout code
@@ -222,7 +213,6 @@ jobs:
         run: composer test
         
       - name: Notify Packagist
-        if: secrets.PACKAGIST_TOKEN != ''
         run: |
           echo "Notifying Packagist of repository update..."
           RESPONSE=$(curl -s -w "%{http_code}" -X POST \
@@ -246,12 +236,6 @@ jobs:
             echo "⚠️ Continuing workflow execution..."
           fi
         
-      - name: Skip Packagist Notification
-        if: secrets.PACKAGIST_TOKEN == ''
-        run: |
-          echo "⚠️ PACKAGIST_TOKEN not configured, skipping Packagist notification"
-          echo "📝 See PACKAGIST_SETUP.md for setup instructions"
-          
       - name: Webhook Summary
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
