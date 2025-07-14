@@ -2,16 +2,12 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
     tags: [ 'v*' ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  # CI Job - runs on all pushes and PRs
+  # CI Job - runs only on tag releases
   ci:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') || github.event_name == 'pull_request'
     strategy:
       matrix:
         php: ['7.4', '8.0', '8.1', '8.2', '8.3']
@@ -50,10 +46,9 @@ jobs:
         run: composer exec -- phpcs --standard=PSR12 src/ tests/
         continue-on-error: true
 
-  # Release and Publish Job - runs only on tag pushes
+  # Release and Publish Job - runs on tag releases
   release-and-publish:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
     
     steps:
       - name: Checkout code
@@ -177,10 +172,9 @@ jobs:
             echo "⚠️ Packagist publishing skipped (token not configured)"
           fi
 
-  # Packagist Webhook Job - runs on main branch pushes and merged PRs
+  # Packagist Webhook Job - runs on tag releases
   packagist-webhook:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     
     steps:
