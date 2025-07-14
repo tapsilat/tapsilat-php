@@ -122,9 +122,8 @@ jobs:
           echo "Publishing package to Packagist..."
           RESPONSE=$(curl -s -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.PACKAGIST_TOKEN }}" \
             -d '{"repository":{"url":"https://github.com/tapsilat/tapsilat-php"}}' \
-            https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }})
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}")
           
           HTTP_STATUS="${RESPONSE: -3}"
           RESPONSE_BODY="${RESPONSE%???}"
@@ -211,9 +210,8 @@ jobs:
           echo "Notifying Packagist of repository update..."
           RESPONSE=$(curl -s -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.PACKAGIST_TOKEN }}" \
             -d '{"repository":{"url":"https://github.com/tapsilat/tapsilat-php"}}' \
-            https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }})
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}")
           
           HTTP_STATUS="${RESPONSE: -3}"
           RESPONSE_BODY="${RESPONSE%???}"
