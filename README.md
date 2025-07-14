@@ -88,20 +88,21 @@ This package uses GitHub Actions for continuous integration and deployment:
   - Runs PHPUnit tests
   - Checks code style with PHP_CodeSniffer
 
-- **Release**: Automatically triggered when a new tag is pushed
-  - Creates a GitHub release
+- **Release & Publish**: Automatically triggered when a new tag is pushed
+  - Creates a GitHub release (if it doesn't exist)
   - Validates and tests the package
-  - Uploads release assets
+  - Publishes to Packagist (if configured)
+  - Verifies package availability on Packagist
+
+- **Packagist Webhook**: Automatically notifies Packagist on every push to main
+  - Triggers on pushes to main branch and merged PRs
+  - Keeps Packagist updated with latest changes
+  - Works alongside GitHub webhook for immediate updates
 
 - **Dependabot**: Automatically updates dependencies
   - Weekly updates for Composer packages
   - Weekly updates for GitHub Actions
   - Creates pull requests for review
-
-- **Packagist**: Automatically publishes to Packagist
-  - Triggers on GitHub releases
-  - Validates and tests before publishing
-  - Verifies package availability on Packagist
 
 To create a new release:
 
