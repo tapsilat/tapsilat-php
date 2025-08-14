@@ -173,204 +173,914 @@ class OrderTest extends TestCase
         $this->assertEquals("payment002", $dtoFullArray["order_item_payment_id"]);
     }
 
-    // Mock API request tests will be added here
-    // Since PHPUnit doesn't have the same mocking capabilities as Python's pytest
-    // We'll need to implement mocking differently or use a library like Mockery
-
     public function testCreateOrderSuccess()
     {
-        // This test would require mocking the HTTP client
-        // For now, we'll create a basic structure
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $expectedApiJsonResponse = [
+            'order_id' => 'mock-03d03353-78bc-4432-9da6-1433ecd7fbbb',
+            'reference_id' => 'mock-03d03353-9b5b-4289-b231-ffbe50f8a79d',
+        ];
+
+        // Create a mock of TapsilatAPI
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        // Set expectation for makeRequest method
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/create', null, $this->anything())
+            ->willReturn($expectedApiJsonResponse);
+
+        $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com');
+        $orderPayloadDto = new OrderCreateDTO(
+            100,
+            'TRY',
+            'tr',
+            $buyer
+        );
+
+        $orderResponseObj = $apiMock->createOrder($orderPayloadDto);
+
+        $this->assertInstanceOf(OrderResponse::class, $orderResponseObj);
+        $this->assertEquals($expectedApiJsonResponse['order_id'], $orderResponseObj->getOrderId());
+        $this->assertEquals($expectedApiJsonResponse['reference_id'], $orderResponseObj->getReferenceId());
     }
 
     public function testCreateOrderWithBasketItems()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $expectedApiJsonResponse = [
+            'order_id' => 'order_basket',
+            'reference_id' => 'ref_basket',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/create', null, $this->anything())
+            ->willReturn($expectedApiJsonResponse);
+
+        $buyerData = new BuyerDTO('Test', 'User');
+        $basketItemPayer = new BasketItemPayerDTO(null, 'payer_ref0_item1');
+        $basketItem1 = new BasketItemDTO(
+            null, null, null, null, null, null,
+            'B001', null, 'Item 1', null, $basketItemPayer, 10.0, 1
+        );
+        $basketItem2 = new BasketItemDTO(
+            null, null, null, null, null, null,
+            'B002', null, 'Item 2', null,
+            new BasketItemPayerDTO(null, 'payer_ref1_item2'),
+            20.49, 2
+        );
+
+        $orderPayloadDto = new OrderCreateDTO(
+            50.98,
+            'TRY',
+            'tr',
+            $buyerData,
+            [$basketItem1, $basketItem2]
+        );
+
+        $apiResponse = $apiMock->createOrder($orderPayloadDto);
+
+        $this->assertEquals($expectedApiJsonResponse['order_id'], $apiResponse->getOrderId());
     }
 
     public function testGetOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-03d03353-9b5b-4289-b231-ffbe50f8a79d';
+        $expectedApiJsonResponse = [
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-03d03353-d2be-4094-b5f6-7b7a8473534e',
+            'status' => 8,
+            'reference_id' => $referenceId,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}")
+            ->willReturn($expectedApiJsonResponse);
+
+        $result = $apiMock->getOrder($referenceId);
+
+        $this->assertInstanceOf(OrderResponse::class, $result);
+        $this->assertEquals($expectedApiJsonResponse['checkout_url'], $result->getCheckoutUrl());
+        $this->assertEquals($expectedApiJsonResponse['status'], $result->getData()['status']);
     }
 
     public function testGetOrderFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-failed-reference-id';
+        $apiErrorContent = ['code' => 101160, 'error' => 'ORDER_ORDER_DETAIL_ORDER_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}")
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_ORDER_DETAIL_ORDER_NOT_FOUND');
+
+        $apiMock->getOrder($referenceId);
     }
 
     public function testGetOrderByConversationIdSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $conversationId = 'mock-conversation-id';
+        $expectedApiJsonResponse = [
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-03d03353-d2be-4094-b5f6-7b7a8473534e',
+            'status' => 8,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/conversation/{$conversationId}")
+            ->willReturn($expectedApiJsonResponse);
+
+        $result = $apiMock->getOrderByConversationId($conversationId);
+
+        $this->assertInstanceOf(OrderResponse::class, $result);
+        $this->assertEquals($expectedApiJsonResponse['checkout_url'], $result->getCheckoutUrl());
     }
 
     public function testGetOrderByConversationIdFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $conversationId = 'mock-conversation-id';
+        $apiErrorContent = ['code' => 101160, 'error' => 'ORDER_ORDER_DETAIL_ORDER_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/conversation/{$conversationId}")
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_ORDER_DETAIL_ORDER_NOT_FOUND');
+
+        $apiMock->getOrderByConversationId($conversationId);
     }
 
     public function testGetOrderList()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $page = 1;
+        $perPage = 3;
+        $expectedApiJsonResponse = [
+            'page' => 1,
+            'per_page' => 3,
+            'rows' => [[], [], []],
+            'total' => 24,
+            'total_page' => 8,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['page' => $page, 'per_page' => $perPage];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/list', $expectedParams)
+            ->willReturn($expectedApiJsonResponse);
+
+        $result = $apiMock->getOrderList($page, $perPage);
+
+        $this->assertEquals($expectedApiJsonResponse, $result);
     }
 
     public function testGetOrderSubmerchants()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $page = 1;
+        $perPage = 2;
+        $expectedApiJsonResponse = [
+            'page' => 1,
+            'per_page' => 2,
+            'row' => [[], []],
+            'total' => 10,
+            'total_pages' => 5,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['page' => $page, 'per_page' => $perPage];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/submerchants', $expectedParams)
+            ->willReturn($expectedApiJsonResponse);
+
+        $result = $apiMock->getOrderSubmerchants($page, $perPage);
+
+        $this->assertEquals($expectedApiJsonResponse, $result);
     }
 
     public function testGetCheckoutUrlSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-ref-for-checkout';
+        $expectedCheckoutUrl = 'https://checkout.test.dev?reference_id=mock-checkout-url-generated';
+        $getOrderApiJsonResponse = [
+            'checkout_url' => $expectedCheckoutUrl,
+            'status' => 'Waiting for payment',
+            'reference_id' => $referenceId,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}")
+            ->willReturn($getOrderApiJsonResponse);
+
+        $checkoutUrlResult = $apiMock->getCheckoutUrl($referenceId);
+
+        $this->assertEquals($expectedCheckoutUrl, $checkoutUrlResult);
     }
 
     public function testCancelOrderNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $apiErrorContent = [
+            'code' => 101550,
+            'error' => 'ORDER_CANCEL_ORDER_GET_ORDER_NOT_FOUND',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/cancel', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_CANCEL_ORDER_GET_ORDER_NOT_FOUND');
+
+        $apiMock->cancelOrder($referenceId);
     }
 
     public function testCancelOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $expectedApiJsonResponse = [
+            'is_success' => true,
+            'error' => 'ORDER_CANCEL_SUCCESS',
+            'status' => '101645',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/cancel', null, $expectedPayload)
+            ->willReturn($expectedApiJsonResponse);
+
+        $apiResponse = $apiMock->cancelOrder($referenceId);
+
+        $this->assertEquals($expectedApiJsonResponse, $apiResponse);
     }
 
     public function testRefundOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $expectedApiJsonResponse = ['is_success' => true, 'error' => 'REFUND_SUCCESSFUL'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $refundPayloadDto = new RefundOrderDTO(50.0, 'mock-reference-id');
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/refund', null, $this->anything())
+            ->willReturn($expectedApiJsonResponse);
+
+        $apiResponse = $apiMock->refundOrder($refundPayloadDto);
+
+        $this->assertEquals($expectedApiJsonResponse, $apiResponse);
     }
 
     public function testRefundOrderFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $apiErrorContent = ['code' => 201010, 'error' => 'REFUND_VALIDATION_ERROR'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $refundPayloadDto = new RefundOrderDTO(0, 'order_ref_invalid');
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/refund', null, $this->anything())
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('REFUND_VALIDATION_ERROR');
+
+        $apiMock->refundOrder($refundPayloadDto);
     }
 
     public function testRefundAllOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'order_ref_xyz';
+        $expectedApiJsonResponse = ['is_success' => true, 'error' => 'REFUND_ALL_SUCCESSFUL'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/refund-all', null, $expectedPayload)
+            ->willReturn($expectedApiJsonResponse);
+
+        $apiResponse = $apiMock->refundAllOrder($referenceId);
+
+        $this->assertEquals($expectedApiJsonResponse, $apiResponse);
     }
 
     public function testRefundAllOrderFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'order_ref_nonexistent';
+        $apiErrorContent = ['code' => 201020, 'error' => 'ORDER_NOT_FOUND_FOR_REFUND_ALL'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/refund-all', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_NOT_FOUND_FOR_REFUND_ALL');
+
+        $apiMock->refundAllOrder($referenceId);
     }
 
     public function testGetOrderPaymentDetailsSuccessWithRefId()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $expectedResponse = ['id' => 'mock-payment-details-id'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/payment-details")
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderPaymentDetails($referenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testGetOrderPaymentDetailsSuccessWithConvId()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $conversationId = 'mock-conversation-id';
+        $expectedResponse = ['id' => 'mock-payment-details-id-conv'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = [
+            'conversation_id' => $conversationId,
+            'reference_id' => $referenceId,
+        ];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/payment-details', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderPaymentDetails($referenceId, $conversationId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testGetOrderPaymentDetailsNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $apiErrorContent = [
+            'code' => 101230,
+            'error' => 'ORDER_ORDER_PAYMENT_DETAIL_ORDER_DETAIL_NOT_FOUND',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/payment-details")
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_ORDER_PAYMENT_DETAIL_ORDER_DETAIL_NOT_FOUND');
+
+        $apiMock->getOrderPaymentDetails($referenceId);
     }
 
     public function testGetOrderStatusSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $expectedResponse = ['status' => 'Refunded'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/status")
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderStatus($referenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testGetOrderStatusNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $apiErrorContent = ['code' => 100810, 'error' => 'ORDER_GET_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/status")
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_GET_NOT_FOUND');
+
+        $apiMock->getOrderStatus($referenceId);
     }
 
     public function testGetOrderTransactionsSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $expectedResponse = [['id' => 'mock-transaction-1']];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/transactions")
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderTransactions($referenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testGetOrderTransactionsNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $apiErrorContent = [
+            'code' => 101260,
+            'error' => 'ORDER_GET_ORDER_TXS_GET_ORDER_NOT_FOUND',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$referenceId}/transactions")
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_GET_ORDER_TXS_GET_ORDER_NOT_FOUND');
+
+        $apiMock->getOrderTransactions($referenceId);
     }
 
     public function testGetOrderTermSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $termReferenceId = 'mock-term-ref-id';
+        $expectedResponse = [
+            'term_sequence' => 1,
+            'amount' => 100,
+            'status' => 'PENDING',
+            'due_date' => ['seconds' => 1760486400],
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['term_reference_id' => $termReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/term', $expectedParams)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderTerm($termReferenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testGetOrderTermFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $termReferenceId = 'mock-none-term-ref-id';
+        $apiErrorContent = ['code' => 313010, 'error' => 'ORDER_GET_PAYMENT_TERM_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['term_reference_id' => $termReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/term', $expectedParams)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_GET_PAYMENT_TERM_NOT_FOUND');
+
+        $apiMock->getOrderTerm($termReferenceId);
     }
 
     public function testCreateOrderTermSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $payloadDto = new \Tapsilat\Models\OrderPaymentTermCreateDTO(
+            'order123',
+            'term-ref-create',
+            200,
+            '2025-10-10 00:00:00',
+            2,
+            false,
+            'active'
+        );
+        $expectedResponse = ['message' => 'ORDER_ADD_PAYMENT_TERM_SUCCESS', 'code' => 156050];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/term', null, $this->anything())
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->createOrderTerm($payloadDto);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testCreateOrderTermFailureExceedsOrderAmount()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $payloadDto = new \Tapsilat\Models\OrderPaymentTermCreateDTO(
+            'order123',
+            'term-ref-create',
+            600,
+            '2025-10-10 00:00:00',
+            2,
+            false,
+            'PENDING'
+        );
+        $apiErrorContent = [
+            'code' => 156025,
+            'error' => 'ORDER_ADD_PAYMENT_TERM_AMOUNT_EXCEEDS_ORDER_AMOUNT',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/term', null, $this->anything())
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_ADD_PAYMENT_TERM_AMOUNT_EXCEEDS_ORDER_AMOUNT');
+
+        $apiMock->createOrderTerm($payloadDto);
     }
 
     public function testCreateOrderTermFailureStatusInvalid()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $payloadDto = new \Tapsilat\Models\OrderPaymentTermCreateDTO(
+            'order123',
+            'term-ref-create',
+            600,
+            '2025-10-10 00:00:00',
+            2,
+            false,
+            'PENDİNG'
+        );
+        $apiErrorContent = ['code' => 140141, 'error' => 'TERM_STATUS_INVALID'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/term', null, $this->anything())
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('TERM_STATUS_INVALID');
+
+        $apiMock->createOrderTerm($payloadDto);
     }
 
     public function testDeleteOrderTermSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $orderId = 'mock-order-id';
+        $termReferenceId = 'mock-none-term-id';
+        $expectedResponse = ['code' => 156090, 'message' => 'ORDER_REMOVE_PAYMENT_TERM_SUCCESS'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('DELETE', '/order/term', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->deleteOrderTerm($orderId, $termReferenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testDeleteOrderTermFailure()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $orderId = 'mock-order-id';
+        $termReferenceId = 'mock-none-term-id';
+        $apiErrorContent = ['code' => 156070, 'error' => 'ORDER_REMOVE_PAYMENT_TERM_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('DELETE', '/order/term', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_REMOVE_PAYMENT_TERM_NOT_FOUND');
+
+        $apiMock->deleteOrderTerm($orderId, $termReferenceId);
     }
 
     public function testUpdateOrderTermSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $payloadDto = new \Tapsilat\Models\OrderPaymentTermUpdateDTO(
+            'term-to-update',
+            60,
+            null,
+            null,
+            null,
+            'PENDING'
+        );
+        $expectedResponse = ['message' => 'ORDER_UPDATE_PAYMENT_TERM_SUCCESS', 'code' => 156130];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('PATCH', '/order/term', null, $this->anything())
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->updateOrderTerm($payloadDto);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testUpdateOrderTermNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $payloadDto = new \Tapsilat\Models\OrderPaymentTermUpdateDTO(
+            'mock-term-id',
+            120
+        );
+        $apiErrorContent = ['code' => 156110, 'error' => 'ORDER_UPDATE_PAYMENT_TERM_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('PATCH', '/order/term', null, $this->anything())
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_UPDATE_PAYMENT_TERM_NOT_FOUND');
+
+        $apiMock->updateOrderTerm($payloadDto);
     }
 
     public function testOrderTerminateOrderNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $apiErrorContent = ['code' => 338000, 'error' => 'ORDER_TERMINATE_ORDER_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/terminate', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_TERMINATE_ORDER_NOT_FOUND');
+
+        $apiMock->orderTerminate($referenceId);
     }
 
     public function testOrderTerminateOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $expectedResponse = ['message' => 'ORDER_TERMINATE_ORDER_SUCCESS', 'code' => 338100];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/terminate', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->orderTerminate($referenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testOrderCallbackFailed()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $conversationId = 'mock-conversation-id';
+        $apiErrorContent = ['code' => 12000, 'error' => 'ACTION_FAILED'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/callback', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ACTION_FAILED');
+
+        $apiMock->orderManualCallback($referenceId, $conversationId);
     }
 
     public function testOrderCallbackOrderSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $conversationId = 'mock-conversation-id';
+        $expectedResponse = ['message' => 'ORDER_CALLBACK_SUCCESS', 'code' => 12100];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/callback', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->orderManualCallback($referenceId, $conversationId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testOrderRelatedUpdateNotFound()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $relatedReferenceId = 'mock-related-reference-id';
+        $apiErrorContent = ['code' => 12000, 'error' => 'ORDER_NOT_FOUND'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/releated', null, $expectedPayload)
+            ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('ORDER_NOT_FOUND');
+
+        $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
     }
 
     public function testOrderRelatedUpdateSuccess()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $referenceId = 'mock-reference-id';
+        $relatedReferenceId = 'mock-related-reference-id';
+        $expectedResponse = ['message' => 'ORDER_RELATED_UPDATE_SUCCESS', 'code' => 12100];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/releated', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 
     public function testCreateOrderWithGsmValidation()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $expectedApiJsonResponse = [
+            'order_id' => 'mock-order-with-gsm',
+            'reference_id' => 'mock-ref-with-gsm',
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/create', null, $this->anything())
+            ->willReturn($expectedApiJsonResponse);
+
+        $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com', '+90 555 123-45-67');
+        $orderPayloadDto = new OrderCreateDTO(100, 'TRY', 'tr', $buyer);
+
+        $orderResponseObj = $apiMock->createOrder($orderPayloadDto);
+
+        $this->assertInstanceOf(OrderResponse::class, $orderResponseObj);
+        $this->assertEquals($expectedApiJsonResponse['order_id'], $orderResponseObj->getOrderId());
     }
 
     public function testCreateOrderWithInvalidGsmRaisesException()
     {
-        $this->markTestIncomplete('API mocking needs to be implemented');
+        $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com', 'invalid-phone');
+        $orderPayloadDto = new OrderCreateDTO(100, 'TRY', 'tr', $buyer);
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        // The validation should happen before the API call, so no API call should be made
+        $apiMock->expects($this->never())
+            ->method('makeRequest');
+
+        $this->expectException(APIException::class);
+        $this->expectExceptionMessage('Invalid phone number format');
+
+        $apiMock->createOrder($orderPayloadDto);
     }
 }
