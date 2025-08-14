@@ -3,6 +3,18 @@
   "description": "Client SDK for Tapsilat API",
   "type": "library",
   "license": "MIT",
+  "version": "2025.08.14.1",
+  "keywords": [
+    "tapsilat",
+    "api",
+    "sdk",
+    "client"
+  ],
+  "homepage": "https://github.com/tapsilat/tapsilat-php",
+  "support": {
+    "issues": "https://github.com/tapsilat/tapsilat-php/issues",
+    "source": "https://github.com/tapsilat/tapsilat-php"
+  },
   "authors": [
     {
       "name": "Tapsilat",
