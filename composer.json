@@ -1,12 +1,12 @@
 {
   "name": "tapsilat/tapsilat-php",
-  "description": "Tapsilat Client SDK for PHP - Create orders and retrieve secure checkout URLs",
+  "description": "Client SDK for Tapsilat API",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
       "name": "Tapsilat",
-      "email": "info@tapsilat.com"
+      "email": "support@tapsilat.dev"
     }
   ],
   "require": {
