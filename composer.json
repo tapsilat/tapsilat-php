@@ -3,7 +3,6 @@
   "description": "Client SDK for Tapsilat API",
   "type": "library",
   "license": "MIT",
-  "version": "2025.08.14.1",
   "keywords": [
     "tapsilat",
     "api",
