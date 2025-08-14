@@ -319,8 +319,6 @@ This will automatically:
 2. Publish the package to Packagist
 3. Make it available via `composer require tapsilat/tapsilat-php`
 
-For detailed Packagist setup instructions, see [PACKAGIST_SETUP.md](PACKAGIST_SETUP.md).
-
 ## Docker Development
 
 This package includes Docker support for easy development setup.
@@ -367,7 +365,3 @@ docker-compose exec tapsilat-dev composer install
 docker-compose exec tapsilat-dev composer test
 docker-compose exec tapsilat-dev php example.php
 ```
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
