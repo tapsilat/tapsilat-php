@@ -239,7 +239,7 @@ class TapsilatAPI
 
     public function orderRelatedUpdate($referenceId, $relatedReferenceId)
     {
-        $endpoint = '/order/releated';
+        $endpoint = '/order/related';
         $payload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }

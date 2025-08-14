@@ -1010,7 +1010,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/releated', null, $expectedPayload)
+            ->with('POST', '/order/related', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -1032,7 +1032,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/releated', null, $expectedPayload)
+            ->with('POST', '/order/related', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
         $result = $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
