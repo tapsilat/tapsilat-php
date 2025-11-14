@@ -14,7 +14,7 @@ class TapsilatAPI
     private $apiKey;
     private $timeout;
 
-    public function __construct($apiKey = '', $timeout = 10, $baseUrl = 'https://acquiring.tapsilat.dev/api/v1')
+    public function __construct($apiKey = '', $timeout = 10, $baseUrl = 'https://panel.tapsilat.dev/api/v1')
     {
         $this->baseUrl = rtrim($baseUrl, '/');
         $this->apiKey = $apiKey;
