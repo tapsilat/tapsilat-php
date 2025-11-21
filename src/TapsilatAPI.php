@@ -7,6 +7,13 @@ use Tapsilat\Models\RefundOrderDTO;
 use Tapsilat\Models\OrderPaymentTermCreateDTO;
 use Tapsilat\Models\OrderPaymentTermUpdateDTO;
 use Tapsilat\Models\OrderTermRefundRequest;
+use Tapsilat\Models\SubscriptionCreateRequest;
+use Tapsilat\Models\SubscriptionGetRequest;
+use Tapsilat\Models\SubscriptionCancelRequest;
+use Tapsilat\Models\SubscriptionRedirectRequest;
+use Tapsilat\Models\SubscriptionCreateResponse;
+use Tapsilat\Models\SubscriptionDetail;
+use Tapsilat\Models\SubscriptionRedirectResponse;
 
 class TapsilatAPI
 {
@@ -242,5 +249,51 @@ class TapsilatAPI
         $endpoint = '/order/related';
         $payload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function getOrganizationSettings()
+    {
+        $endpoint = '/organization/settings';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    // Subscription Methods
+
+    public function createSubscription(SubscriptionCreateRequest $subscription)
+    {
+        $endpoint = '/subscription/create';
+        $payload = $subscription->toArray();
+        $response = $this->makeRequest('POST', $endpoint, null, $payload);
+        return new SubscriptionCreateResponse($response);
+    }
+
+    public function getSubscription(SubscriptionGetRequest $request)
+    {
+        $endpoint = '/subscription';
+        $payload = $request->toArray();
+        $response = $this->makeRequest('POST', $endpoint, null, $payload);
+        return new SubscriptionDetail($response);
+    }
+
+    public function listSubscriptions($page = 1, $perPage = 10)
+    {
+        $endpoint = '/subscription/list';
+        $params = ['page' => $page, 'per_page' => $perPage];
+        return $this->makeRequest('GET', $endpoint, $params);
+    }
+
+    public function cancelSubscription(SubscriptionCancelRequest $request)
+    {
+        $endpoint = '/subscription/cancel';
+        $payload = $request->toArray();
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function redirectSubscription(SubscriptionRedirectRequest $request)
+    {
+        $endpoint = '/subscription/redirect';
+        $payload = $request->toArray();
+        $response = $this->makeRequest('POST', $endpoint, null, $payload);
+        return new SubscriptionRedirectResponse($response);
     }
 }

@@ -261,6 +261,114 @@ $relatedReferenceId = "mock-uuid-related-reference-id";
 $client->orderRelatedUpdate($referenceId, $relatedReferenceId);
 ```
 
+### Get Organization Settings
+```php
+$settings = $client->getOrganizationSettings();
+```
+
+## Subscription Operations
+
+### Create Subscription
+```php
+use Tapsilat\Models\SubscriptionCreateRequest;
+use Tapsilat\Models\SubscriptionBillingDTO;
+use Tapsilat\Models\SubscriptionUserDTO;
+
+$billing = new SubscriptionBillingDTO(
+    "123 Main St",      // address
+    "Istanbul",         // city
+    "John Doe",         // contact_name
+    "TR",              // country
+    "1234567890",      // vat_number
+    "34000"            // zip_code
+);
+
+$user = new SubscriptionUserDTO(
+    "user_123",           // id
+    "John",               // first_name
+    "Doe",                // last_name
+    "john@example.com",   // email
+    "5551234567",         // phone
+    "12345678901",        // identity_number
+    "123 Main St",        // address
+    "Istanbul",           // city
+    "TR",                 // country
+    "34000"               // zip_code
+);
+
+$subscription = new SubscriptionCreateRequest(
+    100.0,                    // amount
+    "TRY",                    // currency
+    "Monthly Subscription",   // title
+    30,                       // period (in days)
+    1,                        // cycle
+    1,                        // payment_date (day of month)
+    "ext_sub_123",            // external_reference_id
+    "https://example.com/success",  // success_url
+    "https://example.com/failure",  // failure_url
+    "card_token_123",         // card_id
+    $billing,                 // billing
+    $user                     // user
+);
+
+$response = $client->createSubscription($subscription);
+echo "Subscription Reference ID: " . $response->getReferenceId();
+echo "Order Reference ID: " . $response->getOrderReferenceId();
+```
+
+### Get Subscription
+```php
+use Tapsilat\Models\SubscriptionGetRequest;
+
+// Get by reference_id
+$request = new SubscriptionGetRequest("subscription_reference_id", null);
+$subscription = $client->getSubscription($request);
+
+// Or get by external_reference_id
+$request = new SubscriptionGetRequest(null, "ext_sub_123");
+$subscription = $client->getSubscription($request);
+
+echo "Title: " . $subscription->getTitle();
+echo "Amount: " . $subscription->getAmount();
+echo "Is Active: " . ($subscription->getIsActive() ? 'Yes' : 'No');
+echo "Payment Status: " . $subscription->getPaymentStatus();
+```
+
+### List Subscriptions
+```php
+// Get first page with 10 items per page
+$subscriptions = $client->listSubscriptions(1, 10);
+
+echo "Total: " . $subscriptions['total'];
+echo "Total Pages: " . $subscriptions['total_pages'];
+
+foreach ($subscriptions['rows'] as $subscription) {
+    echo "Subscription: " . $subscription['title'] . " - " . $subscription['amount'];
+}
+```
+
+### Cancel Subscription
+```php
+use Tapsilat\Models\SubscriptionCancelRequest;
+
+// Cancel by reference_id
+$request = new SubscriptionCancelRequest("subscription_reference_id", null);
+$client->cancelSubscription($request);
+
+// Or cancel by external_reference_id
+$request = new SubscriptionCancelRequest(null, "ext_sub_123");
+$client->cancelSubscription($request);
+```
+
+### Redirect Subscription
+```php
+use Tapsilat\Models\SubscriptionRedirectRequest;
+
+$request = new SubscriptionRedirectRequest("subscription_id");
+$response = $client->redirectSubscription($request);
+echo "Redirect URL: " . $response->getUrl();
+```
+
 ## Requirements
 
 - PHP >= 7.4

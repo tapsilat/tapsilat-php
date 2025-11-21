@@ -11,6 +11,12 @@ use Tapsilat\Models\BasketItemPayerDTO;
 use Tapsilat\Models\BillingAddressDTO;
 use Tapsilat\Models\CheckoutDesignDTO;
 use Tapsilat\Models\ShippingAddressDTO;
+use Tapsilat\Models\SubscriptionCreateRequest;
+use Tapsilat\Models\SubscriptionGetRequest;
+use Tapsilat\Models\SubscriptionCancelRequest;
+use Tapsilat\Models\SubscriptionRedirectRequest;
+use Tapsilat\Models\SubscriptionBillingDTO;
+use Tapsilat\Models\SubscriptionUserDTO;
 use Tapsilat\Validators;
 
 /**
@@ -347,6 +353,112 @@ function runScenario7ValidationErrors($client)
     }
 }
 
+/**
+ * Scenario 8: Subscription Demo
+ */
+function runScenario8SubscriptionDemo($client)
+{
+    echo str_repeat("#", 16) . "\n";
+    echo "Scenario 8: Subscription Demo\n";
+
+    if (!$client) {
+        echo "Client is not initialized.\n";
+        return;
+    }
+
+    try {
+        // Create subscription billing
+        $billing = new SubscriptionBillingDTO(
+            "123 Main St",
+            "Istanbul",
+            "John Doe",
+            "TR",
+            "1234567890",
+            "34000"
+        );
+
+        // Create subscription user
+        $user = new SubscriptionUserDTO(
+            "user_123",
+            "John",
+            "Doe",
+            "john@example.com",
+            "5551234567",
+            "12345678901",
+            "123 Main St",
+            "Istanbul",
+            "TR",
+            "34000"
+        );
+
+        // Create subscription
+        $subscription = new SubscriptionCreateRequest(
+            100.0,
+            "TRY",
+            "Monthly Subscription",
+            30,
+            1,
+            1,
+            "ext_sub_" . time(),
+            "https://example.com/success",
+            "https://example.com/failure",
+            "card_token_123",
+            $billing,
+            $user
+        );
+
+        $response = $client->createSubscription($subscription);
+        echo "Subscription created successfully!\n";
+        echo "Reference ID: " . $response->getReferenceId() . "\n";
+        echo "Order Reference ID: " . $response->getOrderReferenceId() . "\n";
+
+        // Get subscription
+        if ($response->getReferenceId()) {
+            $getRequest = new SubscriptionGetRequest($response->getReferenceId(), null);
+            $subscriptionDetail = $client->getSubscription($getRequest);
+            echo "Subscription Title: " . $subscriptionDetail->getTitle() . "\n";
+            echo "Subscription Amount: " . $subscriptionDetail->getAmount() . "\n";
+        }
+
+        // List subscriptions
+        $subscriptions = $client->listSubscriptions(1, 10);
+        echo "Total Subscriptions: " . $subscriptions['total'] . "\n";
+
+    } catch (APIException $e) {
+        echo "API Error: " . $e->error . "\n";
+        echo "Status Code: " . $e->statusCode . "\n";
+        echo "Code: " . $e->code . "\n";
+    } catch (Exception $e) {
+        echo "Unexpected error: " . $e->getMessage() . "\n";
+    }
+}
+
+/**
+ * Scenario 9: Organization Settings Demo
+ */
+function runScenario9OrganizationSettings($client)
+{
+    echo str_repeat("#", 16) . "\n";
+    echo "Scenario 9: Organization Settings Demo\n";
+
+    if (!$client) {
+        echo "Client is not initialized.\n";
+        return;
+    }
+
+    try {
+        $settings = $client->getOrganizationSettings();
+        echo "Organization Settings Retrieved:\n";
+        print_r($settings);
+    } catch (APIException $e) {
+        echo "API Error: " . $e->error . "\n";
+        echo "Status Code: " . $e->statusCode . "\n";
+        echo "Code: " . $e->code . "\n";
+    } catch (Exception $e) {
+        echo "Unexpected error: " . $e->getMessage() . "\n";
+    }
+}
+
 // Main execution
 if (php_sapi_name() === 'cli') {
     echo "=== Tapsilat PHP SDK Usage Examples ===\n\n";
@@ -361,6 +473,8 @@ if (php_sapi_name() === 'cli') {
         runScenario5DetailedCheckoutDesign($apiClient);
         runScenario6ValidationDemo($apiClient);
         runScenario7ValidationErrors($apiClient);
+        runScenario8SubscriptionDemo($apiClient);
+        runScenario9OrganizationSettings($apiClient);
     }
 
     echo "\n=== Examples completed ===\n";
