@@ -1,5 +1,6 @@
 {
   "name": "tapsilat/tapsilat-php",
+  "version": "2025.12.5.1",
   "description": "Client SDK for Tapsilat API",
   "type": "library",
   "license": "MIT",
