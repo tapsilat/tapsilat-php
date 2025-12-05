@@ -266,6 +266,34 @@ $client->orderRelatedUpdate($referenceId, $relatedReferenceId);
 $settings = $client->getOrganizationSettings();
 ```
 
+### Health Monitoring
+```php
+$health = $client->healthCheck();
+echo "Status: " . $health['status'];
+echo "Timestamp: " . $health['timestamp'];
+```
+
+### Webhook Handling
+
+#### Verify Webhook Signature
+```php
+$payload = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_TAPSILAT_SIGNATURE'];
+$secret = 'your_webhook_secret';
+
+$isValid = TapsilatAPI::verifyWebhook($payload, $signature, $secret);
+
+if ($isValid) {
+    // Process webhook
+    $event = json_decode($payload, true);
+    // ...
+} else {
+    // Invalid signature
+    http_response_code(401);
+    exit;
+}
+```
+
 ## Subscription Operations
 
 ### Create Subscription
@@ -383,11 +411,54 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Testing
 
-Run the tests with PHPUnit:
+The SDK includes comprehensive unit and integration tests.
+
+### Environment Setup
+
+For integration tests, create a `.env` file in the project root:
+
+```env
+TAPSILAT_API_KEY=your_api_key_here
+```
+
+### Running Tests
 
 ```bash
+# Run all tests (unit + integration)
 composer test
+# or
+vendor/bin/phpunit
+
+# Run only unit tests (no API calls)
+vendor/bin/phpunit --testsuite=Unit
+
+# Run only integration tests (real API calls)
+vendor/bin/phpunit --testsuite=Integration
+
+# Run with coverage report
+vendor/bin/phpunit --coverage-html coverage/
 ```
+
+### Test Structure
+
+```
+tests/
+├── Unit/                    # Mock-based tests (no API calls)
+│   ├── OrderTest.php       # Order operations
+│   ├── SubscriptionTest.php # Subscription operations
+│   ├── OrganizationTest.php # Organization settings
+│   └── ValidatorTest.php   # Utility validators
+└── Integration/            # Real API tests (requires API key)
+    ├── OrderIntegrationTest.php
+    └── SubscriptionIntegrationTest.php
+```
+
+### Test Coverage
+
+- **Unit Tests**: 87 tests covering all 28 API methods
+- **Integration Tests**: 6 tests for critical API flows
+- **Total**: 93 tests with 228 assertions
+
 
 ## CI/CD
 

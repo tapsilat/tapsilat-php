@@ -68,7 +68,10 @@ class TapsilatAPI
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        curl_close($ch);
+
+        if (is_resource($ch)) {
+            curl_close($ch);
+        }
 
         if ($error) {
             throw new APIException(0, -1, $error);
@@ -105,7 +108,22 @@ class TapsilatAPI
 
         $payload = $order->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        return new OrderResponse($response);
+        $orderResponse = new OrderResponse($response);
+
+        // Auto-fetch checkout URL if order creation was successful
+        if (!empty($orderResponse->getReferenceId())) {
+            try {
+                $checkoutUrl = $this->getCheckoutUrl($orderResponse->getReferenceId());
+                if (!empty($checkoutUrl)) {
+                    $response['checkout_url'] = $checkoutUrl;
+                    $orderResponse = new OrderResponse($response);
+                }
+            } catch (\Exception $e) {
+                // Silently fail - don't break order creation if checkout URL fetch fails
+            }
+        }
+
+        return $orderResponse;
     }
 
     public function getOrder($referenceId)
@@ -132,7 +150,7 @@ class TapsilatAPI
             'end_date' => $endDate,
             'organization_id' => $organizationId,
             'related_reference_id' => $relatedReferenceId
-        ], function($value) {
+        ], function ($value) {
             return $value !== '' && $value !== null;
         });
         return $this->makeRequest('GET', $endpoint, $params);
@@ -142,6 +160,16 @@ class TapsilatAPI
     {
         $endpoint = '/order/submerchants';
         $params = ['page' => $page, 'per_page' => $perPage];
+        return $this->makeRequest('GET', $endpoint, $params);
+    }
+
+    public function getOrders($page = '1', $perPage = '10', $buyerId = '')
+    {
+        $endpoint = '/order/list';
+        $params = ['page' => $page, 'per_page' => $perPage];
+        if (!empty($buyerId)) {
+            $params['buyer_id'] = $buyerId;
+        }
         return $this->makeRequest('GET', $endpoint, $params);
     }
 
@@ -197,30 +225,29 @@ class TapsilatAPI
 
     public function getOrderTerm($termReferenceId)
     {
-        $endpoint = '/order/term';
-        $params = ['term_reference_id' => $termReferenceId];
-        return $this->makeRequest('GET', $endpoint, $params);
+        $endpoint = "/order/term/{$termReferenceId}";
+        return $this->makeRequest('GET', $endpoint);
     }
 
     public function createOrderTerm(OrderPaymentTermCreateDTO $term)
     {
-        $endpoint = '/order/term';
+        $endpoint = '/order/term/create';
         $payload = $term->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
     public function deleteOrderTerm($orderId, $termReferenceId)
     {
-        $endpoint = '/order/term';
+        $endpoint = '/order/term/delete';
         $payload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
-        return $this->makeRequest('DELETE', $endpoint, null, $payload);
+        return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
     public function updateOrderTerm(OrderPaymentTermUpdateDTO $term)
     {
-        $endpoint = '/order/term';
+        $endpoint = '/order/term/update';
         $payload = $term->toArray();
-        return $this->makeRequest('PATCH', $endpoint, null, $payload);
+        return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
     public function refundOrderTerm(OrderTermRefundRequest $term)
@@ -237,16 +264,19 @@ class TapsilatAPI
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function orderManualCallback($referenceId, $conversationId)
+    public function orderManualCallback($referenceId, $conversationId = '')
     {
-        $endpoint = '/order/callback';
-        $payload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
+        $endpoint = '/order/manual-callback';
+        $payload = ['reference_id' => $referenceId];
+        if (!empty($conversationId)) {
+            $payload['conversation_id'] = $conversationId;
+        }
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
     public function orderRelatedUpdate($referenceId, $relatedReferenceId)
     {
-        $endpoint = '/order/related';
+        $endpoint = '/order/related-update';
         $payload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
@@ -295,5 +325,27 @@ class TapsilatAPI
         $payload = $request->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
         return new SubscriptionRedirectResponse($response);
+    }
+
+    public function terminateOrderTerm($termReferenceId, $reason = '')
+    {
+        $endpoint = '/order/term/terminate';
+        $payload = ['term_reference_id' => $termReferenceId];
+        if (!empty($reason)) {
+            $payload['reason'] = $reason;
+        }
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function healthCheck()
+    {
+        $endpoint = '/health';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public static function verifyWebhook($payload, $signature, $secret)
+    {
+        $expectedSignature = hash_hmac('sha256', $payload, $secret);
+        return 'sha256=' . $expectedSignature === $signature;
     }
 }

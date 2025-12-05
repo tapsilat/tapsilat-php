@@ -54,8 +54,19 @@ class OrderTest extends TestCase
     {
         $payerData = new BasketItemPayerDTO("uskudar", null, null, null, "BUSINESS");
         $item = new BasketItemDTO(
-            null, null, null, null, null, null,
-            "BI101", "PHYSICAL", "Binocular", null, $payerData, 19.99, 1
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "BI101",
+            "PHYSICAL",
+            "Binocular",
+            null,
+            $payerData,
+            19.99,
+            1
         );
         $itemArray = $item->toArray();
         $this->assertEquals("BI101", $itemArray["id"]);
@@ -138,8 +149,19 @@ class OrderTest extends TestCase
     public function testSubOrganizationDTOToArray()
     {
         $subOrg = new SubOrganizationDTO(
-            null, null, null, null, null, null, null, null, null,
-            "ACME Inc.", "ACME Inc.", null, "sub merchant key"
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "ACME Inc.",
+            "ACME Inc.",
+            null,
+            "sub merchant key"
         );
         $subOrgArray = $subOrg->toArray();
         $this->assertEquals("ACME Inc.", $subOrgArray["organization_name"]);
@@ -180,16 +202,25 @@ class OrderTest extends TestCase
             'reference_id' => 'mock-03d03353-9b5b-4289-b231-ffbe50f8a79d',
         ];
 
+        $checkoutResponse = [
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-checkout',
+            'reference_id' => 'mock-03d03353-9b5b-4289-b231-ffbe50f8a79d',
+        ];
+
         // Create a mock of TapsilatAPI
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        // Set expectation for makeRequest method
-        $apiMock->expects($this->once())
+        // Expect 2 calls: 1 for order creation, 1 for checkout URL
+        $apiMock->expects($this->exactly(2))
             ->method('makeRequest')
-            ->with('POST', '/order/create', null, $this->anything())
-            ->willReturn($expectedApiJsonResponse);
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
+                if ($endpoint === '/order/create') {
+                    return $expectedApiJsonResponse;
+                }
+                return $checkoutResponse;
+            });
 
         $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com');
         $orderPayloadDto = new OrderCreateDTO(
@@ -213,26 +244,56 @@ class OrderTest extends TestCase
             'reference_id' => 'ref_basket',
         ];
 
+        $checkoutResponse = [
+            'checkout_url' => 'https://checkout.test.dev?reference_id=ref_basket',
+            'reference_id' => 'ref_basket',
+        ];
+
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $apiMock->expects($this->once())
+        // Expect 2 calls: 1 for order creation, 1 for checkout URL
+        $apiMock->expects($this->exactly(2))
             ->method('makeRequest')
-            ->with('POST', '/order/create', null, $this->anything())
-            ->willReturn($expectedApiJsonResponse);
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
+                if ($endpoint === '/order/create') {
+                    return $expectedApiJsonResponse;
+                }
+                return $checkoutResponse;
+            });
 
         $buyerData = new BuyerDTO('Test', 'User');
         $basketItemPayer = new BasketItemPayerDTO(null, 'payer_ref0_item1');
         $basketItem1 = new BasketItemDTO(
-            null, null, null, null, null, null,
-            'B001', null, 'Item 1', null, $basketItemPayer, 10.0, 1
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            'B001',
+            null,
+            'Item 1',
+            null,
+            $basketItemPayer,
+            10.0,
+            1
         );
         $basketItem2 = new BasketItemDTO(
-            null, null, null, null, null, null,
-            'B002', null, 'Item 2', null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            'B002',
+            null,
+            'Item 2',
+            null,
             new BasketItemPayerDTO(null, 'payer_ref1_item2'),
-            20.49, 2
+            20.49,
+            2
         );
 
         $orderPayloadDto = new OrderCreateDTO(
@@ -703,10 +764,9 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $expectedParams = ['term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('GET', '/order/term', $expectedParams)
+            ->with('GET', "/order/term/{$termReferenceId}")
             ->willReturn($expectedResponse);
 
         $result = $apiMock->getOrderTerm($termReferenceId);
@@ -723,10 +783,9 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $expectedParams = ['term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('GET', '/order/term', $expectedParams)
+            ->with('GET', "/order/term/{$termReferenceId}")
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -754,7 +813,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term/create', null, $this->anything())
             ->willReturn($expectedResponse);
 
         $result = $apiMock->createOrderTerm($payloadDto);
@@ -784,7 +843,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term/create', null, $this->anything())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -812,7 +871,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term/create', null, $this->anything())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -834,7 +893,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('DELETE', '/order/term', null, $expectedPayload)
+            ->with('POST', '/order/term/delete', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
         $result = $apiMock->deleteOrderTerm($orderId, $termReferenceId);
@@ -855,7 +914,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('DELETE', '/order/term', null, $expectedPayload)
+            ->with('POST', '/order/term/delete', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -882,7 +941,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('PATCH', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term/update', null, $this->anything())
             ->willReturn($expectedResponse);
 
         $result = $apiMock->updateOrderTerm($payloadDto);
@@ -904,7 +963,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('PATCH', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term/update', null, $this->anything())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -967,7 +1026,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/callback', null, $expectedPayload)
+            ->with('POST', '/order/manual-callback', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -989,7 +1048,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/callback', null, $expectedPayload)
+            ->with('POST', '/order/manual-callback', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
         $result = $apiMock->orderManualCallback($referenceId, $conversationId);
@@ -1010,7 +1069,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/related', null, $expectedPayload)
+            ->with('POST', '/order/related-update', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -1032,7 +1091,7 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/related', null, $expectedPayload)
+            ->with('POST', '/order/related-update', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
         $result = $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
@@ -1047,14 +1106,24 @@ class OrderTest extends TestCase
             'reference_id' => 'mock-ref-with-gsm',
         ];
 
+        $checkoutResponse = [
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-ref-with-gsm',
+            'reference_id' => 'mock-ref-with-gsm',
+        ];
+
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $apiMock->expects($this->once())
+        // Expect 2 calls: 1 for order creation, 1 for checkout URL
+        $apiMock->expects($this->exactly(2))
             ->method('makeRequest')
-            ->with('POST', '/order/create', null, $this->anything())
-            ->willReturn($expectedApiJsonResponse);
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
+                if ($endpoint === '/order/create') {
+                    return $expectedApiJsonResponse;
+                }
+                return $checkoutResponse;
+            });
 
         $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com', '+90 555 123-45-67');
         $orderPayloadDto = new OrderCreateDTO(100, 'TRY', 'tr', $buyer);
@@ -1082,5 +1151,84 @@ class OrderTest extends TestCase
         $this->expectExceptionMessage('Invalid phone number format');
 
         $apiMock->createOrder($orderPayloadDto);
+    }
+
+    public function testGetOrdersSuccess()
+    {
+        $page = '1';
+        $perPage = '10';
+        $buyerId = 'buyer123';
+        $expectedResponse = [
+            'page' => 1,
+            'per_page' => 10,
+            'rows' => [[], []],
+            'total' => 20,
+            'total_page' => 2,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['page' => $page, 'per_page' => $perPage, 'buyer_id' => $buyerId];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/list', $expectedParams)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrders($page, $perPage, $buyerId);
+
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testGetOrdersWithoutBuyerId()
+    {
+        $page = '1';
+        $perPage = '5';
+        $expectedResponse = [
+            'page' => 1,
+            'per_page' => 5,
+            'rows' => [],
+            'total' => 0,
+            'total_page' => 0,
+        ];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedParams = ['page' => $page, 'per_page' => $perPage];
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', '/order/list', $expectedParams)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrders($page, $perPage);
+
+        $this->assertEquals($expectedResponse, $result);
+    }
+    public function testTerminateOrderTerm()
+    {
+        $termReferenceId = 'term_ref_123';
+        $reason = 'cancellation reason';
+        $expectedResponse = ['success' => true];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = [
+            'term_reference_id' => $termReferenceId,
+            'reason' => $reason
+        ];
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/term/terminate', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->terminateOrderTerm($termReferenceId, $reason);
+
+        $this->assertEquals($expectedResponse, $result);
     }
 }
