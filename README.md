@@ -266,6 +266,34 @@ $client->orderRelatedUpdate($referenceId, $relatedReferenceId);
 $settings = $client->getOrganizationSettings();
 ```
 
+### Health Monitoring
+```php
+$health = $client->healthCheck();
+echo "Status: " . $health['status'];
+echo "Timestamp: " . $health['timestamp'];
+```
+
+### Webhook Handling
+
+#### Verify Webhook Signature
+```php
+$payload = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_TAPSILAT_SIGNATURE'];
+$secret = 'your_webhook_secret';
+
+$isValid = TapsilatAPI::verifyWebhook($payload, $signature, $secret);
+
+if ($isValid) {
+    // Process webhook
+    $event = json_decode($payload, true);
+    // ...
+} else {
+    // Invalid signature
+    http_response_code(401);
+    exit;
+}
+```
+
 ## Subscription Operations
 
 ### Create Subscription

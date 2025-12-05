@@ -1207,4 +1207,28 @@ class OrderTest extends TestCase
 
         $this->assertEquals($expectedResponse, $result);
     }
+    public function testTerminateOrderTerm()
+    {
+        $termReferenceId = 'term_ref_123';
+        $reason = 'cancellation reason';
+        $expectedResponse = ['success' => true];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
+            ->onlyMethods(['makeRequest'])
+            ->getMock();
+
+        $expectedPayload = [
+            'term_reference_id' => $termReferenceId,
+            'reason' => $reason
+        ];
+
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/term/terminate', null, $expectedPayload)
+            ->willReturn($expectedResponse);
+
+        $result = $apiMock->terminateOrderTerm($termReferenceId, $reason);
+
+        $this->assertEquals($expectedResponse, $result);
+    }
 }

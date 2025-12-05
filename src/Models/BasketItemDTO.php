@@ -32,7 +32,7 @@ class BasketItemDTO
         $item_type = null,
         $name = null,
         $paid_amount = null,
-        BasketItemPayerDTO $payer = null,
+        ?BasketItemPayerDTO $payer = null,
         $price = null,
         $quantity = null,
         $quantity_float = null,

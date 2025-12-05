@@ -34,25 +34,25 @@ class OrderCreateDTO
         $currency,
         $locale,
         BuyerDTO $buyer,
-        array $basket_items = null,
-        BillingAddressDTO $billing_address = null,
-        CheckoutDesignDTO $checkout_design = null,
+        ?array $basket_items = null,
+        ?BillingAddressDTO $billing_address = null,
+        ?CheckoutDesignDTO $checkout_design = null,
         $conversation_id = null,
-        array $enabled_installments = null,
+        ?array $enabled_installments = null,
         $external_reference_id = null,
-        array $metadata = null,
-        OrderCardDTO $order_cards = null,
+        ?array $metadata = null,
+        ?OrderCardDTO $order_cards = null,
         $paid_amount = null,
         $partial_payment = null,
         $payment_failure_url = null,
         $payment_methods = null,
-        array $payment_options = null,
+        ?array $payment_options = null,
         $payment_success_url = null,
-        array $payment_terms = null,
+        ?array $payment_terms = null,
         $pf_sub_merchant = null,
-        ShippingAddressDTO $shipping_address = null,
-        SubOrganizationDTO $sub_organization = null,
-        array $submerchants = null,
+        ?ShippingAddressDTO $shipping_address = null,
+        ?SubOrganizationDTO $sub_organization = null,
+        ?array $submerchants = null,
         $tax_amount = null,
         $three_d_force = null
     ) {
@@ -91,7 +91,7 @@ class OrderCreateDTO
                 if (is_object($value) && method_exists($value, 'toArray')) {
                     $result[$key] = $value->toArray();
                 } elseif (is_array($value)) {
-                    $result[$key] = array_map(function($item) {
+                    $result[$key] = array_map(function ($item) {
                         return is_object($item) && method_exists($item, 'toArray') ? $item->toArray() : $item;
                     }, $value);
                 } else {

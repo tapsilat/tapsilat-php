@@ -68,7 +68,10 @@ class TapsilatAPI
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        curl_close($ch);
+
+        if (is_resource($ch)) {
+            curl_close($ch);
+        }
 
         if ($error) {
             throw new APIException(0, -1, $error);
@@ -322,5 +325,27 @@ class TapsilatAPI
         $payload = $request->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
         return new SubscriptionRedirectResponse($response);
+    }
+
+    public function terminateOrderTerm($termReferenceId, $reason = '')
+    {
+        $endpoint = '/order/term/terminate';
+        $payload = ['term_reference_id' => $termReferenceId];
+        if (!empty($reason)) {
+            $payload['reason'] = $reason;
+        }
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function healthCheck()
+    {
+        $endpoint = '/health';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public static function verifyWebhook($payload, $signature, $secret)
+    {
+        $expectedSignature = hash_hmac('sha256', $payload, $secret);
+        return 'sha256=' . $expectedSignature === $signature;
     }
 }
