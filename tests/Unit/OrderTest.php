@@ -813,7 +813,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/create', null, $this->anything())
+            ->with('POST', '/order/term', null, $this->anything())
             ->willReturn($expectedResponse);
 
         $result = $apiMock->createOrderTerm($payloadDto);
@@ -843,7 +843,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/create', null, $this->anything())
+            ->with('POST', '/order/term', null, $this->anything())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -871,7 +871,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/create', null, $this->anything())
+            ->with('POST', '/order/term', null, $this->anything())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
