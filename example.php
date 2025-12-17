@@ -210,10 +210,13 @@ function runScenario3OrderWithAddresses($client)
         null, // partial_payment
         null, // payment_failure_url
         null, // payment_methods
+        null, // payment_mode
         null, // payment_options
         null, // payment_success_url
         null, // payment_terms
         null, // pf_sub_merchant
+        null, // redirect_failure_url
+        null, // redirect_success_url
         $shippingAddress // shipping_address
     );
 
@@ -244,6 +247,7 @@ function runScenario4InstallmentsAndPaymentMethods($client)
         false, // partial_payment
         "https://example.com/payment-failure", // payment_failure_url
         true, // payment_methods - boolean value instead of string
+        null, // payment_mode
         null, // payment_options
         "https://example.com/payment-success" // payment_success_url
     );

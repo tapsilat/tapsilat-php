@@ -14,6 +14,8 @@ use Tapsilat\Models\SubscriptionRedirectRequest;
 use Tapsilat\Models\SubscriptionCreateResponse;
 use Tapsilat\Models\SubscriptionDetail;
 use Tapsilat\Models\SubscriptionRedirectResponse;
+use Tapsilat\Models\OrderAccountingRequest;
+use Tapsilat\Models\OrderPostAuthRequest;
 
 class TapsilatAPI
 {
@@ -126,6 +128,26 @@ class TapsilatAPI
         return $orderResponse;
     }
 
+    public function orderAccounting(OrderAccountingRequest $request)
+    {
+        $endpoint = '/order/accounting';
+        $payload = $request->toArray();
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function orderPostAuth(OrderPostAuthRequest $request)
+    {
+        $endpoint = '/order/postauth';
+        $payload = $request->toArray();
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function getSystemOrderStatuses()
+    {
+        $endpoint = '/system/order-statuses';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
     public function getOrder($referenceId)
     {
         $endpoint = "/order/{$referenceId}";
@@ -231,7 +253,7 @@ class TapsilatAPI
 
     public function createOrderTerm(OrderPaymentTermCreateDTO $term)
     {
-        $endpoint = '/order/term/create';
+        $endpoint = '/order/term';
         $payload = $term->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }

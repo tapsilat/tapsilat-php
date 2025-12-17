@@ -19,10 +19,13 @@ class OrderCreateDTO
     public $partial_payment;
     public $payment_failure_url;
     public $payment_methods;
+    public $payment_mode;
     public $payment_options;
     public $payment_success_url;
     public $payment_terms;
     public $pf_sub_merchant;
+    public $redirect_failure_url;
+    public $redirect_success_url;
     public $shipping_address;
     public $sub_organization;
     public $submerchants;
@@ -46,10 +49,13 @@ class OrderCreateDTO
         $partial_payment = null,
         $payment_failure_url = null,
         $payment_methods = null,
+        $payment_mode = null,
         ?array $payment_options = null,
         $payment_success_url = null,
         ?array $payment_terms = null,
         $pf_sub_merchant = null,
+        $redirect_failure_url = null,
+        $redirect_success_url = null,
         ?ShippingAddressDTO $shipping_address = null,
         ?SubOrganizationDTO $sub_organization = null,
         ?array $submerchants = null,
@@ -72,10 +78,13 @@ class OrderCreateDTO
         $this->partial_payment = $partial_payment;
         $this->payment_failure_url = $payment_failure_url;
         $this->payment_methods = $payment_methods;
+        $this->payment_mode = $payment_mode;
         $this->payment_options = $payment_options;
         $this->payment_success_url = $payment_success_url;
         $this->payment_terms = $payment_terms;
         $this->pf_sub_merchant = $pf_sub_merchant;
+        $this->redirect_failure_url = $redirect_failure_url;
+        $this->redirect_success_url = $redirect_success_url;
         $this->shipping_address = $shipping_address;
         $this->sub_organization = $sub_organization;
         $this->submerchants = $submerchants;
