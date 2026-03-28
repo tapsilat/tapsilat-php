@@ -29,4 +29,9 @@ class OrderResponse
     {
         return $this->data;
     }
+
+    public function toArray()
+    {
+        return $this->data;
+    }
 }

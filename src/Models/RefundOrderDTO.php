@@ -9,8 +9,8 @@ class RefundOrderDTO
     public $order_item_payment_id;
 
     public function __construct(
-        $amount,
-        $reference_id,
+        $amount = null,
+        $reference_id = null,
         $order_item_id = null,
         $order_item_payment_id = null
     ) {

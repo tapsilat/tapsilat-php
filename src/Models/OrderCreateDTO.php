@@ -10,6 +10,7 @@ class OrderCreateDTO
     public $basket_items;
     public $billing_address;
     public $checkout_design;
+    public $consents;
     public $conversation_id;
     public $enabled_installments;
     public $external_reference_id;
@@ -33,13 +34,14 @@ class OrderCreateDTO
     public $three_d_force;
 
     public function __construct(
-        $amount,
-        $currency,
-        $locale,
-        BuyerDTO $buyer,
+        $amount = null,
+        $currency = null,
+        $locale = null,
+        ?BuyerDTO $buyer = null,
         ?array $basket_items = null,
         ?BillingAddressDTO $billing_address = null,
         ?CheckoutDesignDTO $checkout_design = null,
+        ?array $consents = null,
         $conversation_id = null,
         ?array $enabled_installments = null,
         $external_reference_id = null,
@@ -69,6 +71,7 @@ class OrderCreateDTO
         $this->basket_items = $basket_items;
         $this->billing_address = $billing_address;
         $this->checkout_design = $checkout_design;
+        $this->consents = $consents;
         $this->conversation_id = $conversation_id;
         $this->enabled_installments = $enabled_installments;
         $this->external_reference_id = $external_reference_id;

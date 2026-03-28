@@ -17,18 +17,18 @@ class BillingAddressDTO
     public $zip_code;
 
     public function __construct(
+        $contact_name = null,
+        $city = null,
+        $country = null,
         $address = null,
+        $zip_code = null,
+        $contact_phone = null,
+        $vat_number = null,
         $billing_type = null,
         $citizenship = null,
-        $city = null,
-        $contact_name = null,
-        $contact_phone = null,
-        $country = null,
         $district = null,
         $tax_office = null,
-        $title = null,
-        $vat_number = null,
-        $zip_code = null
+        $title = null
     ) {
         $this->address = $address;
         $this->billing_type = $billing_type;

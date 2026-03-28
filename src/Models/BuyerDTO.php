@@ -20,8 +20,8 @@ class BuyerDTO
     public $zip_code;
 
     public function __construct(
-        $name,
-        $surname,
+        $name = null,
+        $surname = null,
         $birth_date = null,
         $city = null,
         $country = null,

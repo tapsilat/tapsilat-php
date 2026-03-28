@@ -14,13 +14,13 @@ class OrderPaymentTermCreateDTO
     public $paid_date;
 
     public function __construct(
-        $order_id,
-        $term_reference_id,
-        $amount,
-        $due_date,
-        $term_sequence,
-        $required,
-        $status,
+        $order_id = null,
+        $term_reference_id = null,
+        $amount = null,
+        $due_date = null,
+        $term_sequence = null,
+        $required = null,
+        $status = null,
         $data = null,
         $paid_date = null
     ) {

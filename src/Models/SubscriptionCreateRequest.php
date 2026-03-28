@@ -17,18 +17,18 @@ class SubscriptionCreateRequest
     public $user;
 
     public function __construct(
-        $amount = null,
-        $currency = null,
         $title = null,
+        $amount = null,
         $period = null,
-        $cycle = null,
         $payment_date = null,
+        $currency = null,
+        $cycle = null,
         $external_reference_id = null,
         $success_url = null,
         $failure_url = null,
         $card_id = null,
-        $billing = null,
-        $user = null
+        ?SubscriptionUserDTO $user = null,
+        ?SubscriptionBillingDTO $billing = null
     ) {
         $this->amount = $amount;
         $this->currency = $currency;
@@ -57,7 +57,7 @@ class SubscriptionCreateRequest
             'success_url' => $this->success_url,
             'failure_url' => $this->failure_url,
             'card_id' => $this->card_id,
-        ], function($value) {
+        ], function ($value) {
             return $value !== null;
         });
 
