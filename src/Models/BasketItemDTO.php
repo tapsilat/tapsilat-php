@@ -22,23 +22,23 @@ class BasketItemDTO
     public $sub_merchant_price;
 
     public function __construct(
-        $id = null,
-        $name = null,
         $category1 = null,
-        $item_type = null,
-        $price = null,
-        $quantity = null,
-        $sub_merchant_price = null,
         $category2 = null,
         $commission_amount = null,
         $coupon = null,
         $coupon_discount = null,
         $data = null,
+        $id = null,
+        $item_type = null,
+        $name = null,
         $paid_amount = null,
         ?BasketItemPayerDTO $payer = null,
+        $price = null,
+        $quantity = null,
         $quantity_float = null,
         $quantity_unit = null,
-        $sub_merchant_key = null
+        $sub_merchant_key = null,
+        $sub_merchant_price = null
     ) {
         $this->category1 = $category1;
         $this->category2 = $category2;

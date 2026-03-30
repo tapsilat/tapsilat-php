@@ -15,20 +15,22 @@ class SubscriptionCreateRequest
     public $card_id;
     public $billing;
     public $user;
+    public $price_option;
 
     public function __construct(
-        $title = null,
         $amount = null,
-        $period = null,
-        $payment_date = null,
         $currency = null,
+        $title = null,
+        $period = null,
         $cycle = null,
+        $payment_date = null,
         $external_reference_id = null,
         $success_url = null,
         $failure_url = null,
         $card_id = null,
+        ?SubscriptionBillingDTO $billing = null,
         ?SubscriptionUserDTO $user = null,
-        ?SubscriptionBillingDTO $billing = null
+        ?SubscriptionPriceOption $price_option = null
     ) {
         $this->amount = $amount;
         $this->currency = $currency;
@@ -42,6 +44,7 @@ class SubscriptionCreateRequest
         $this->card_id = $card_id;
         $this->billing = $billing;
         $this->user = $user;
+        $this->price_option = $price_option;
     }
 
     public function toArray()
@@ -67,6 +70,10 @@ class SubscriptionCreateRequest
 
         if ($this->user instanceof SubscriptionUserDTO) {
             $data['user'] = $this->user->toArray();
+        }
+
+        if ($this->price_option instanceof SubscriptionPriceOption) {
+            $data['price_option'] = $this->price_option->toArray();
         }
 
         return $data;
