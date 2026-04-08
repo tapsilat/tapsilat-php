@@ -11,6 +11,7 @@ class BasketItemDTO
     public $data;
     public $id;
     public $item_type;
+    public $mcc;
     public $name;
     public $paid_amount;
     public $payer;
@@ -30,6 +31,7 @@ class BasketItemDTO
         $data = null,
         $id = null,
         $item_type = null,
+        $mcc = null,
         $name = null,
         $paid_amount = null,
         ?BasketItemPayerDTO $payer = null,
@@ -48,6 +50,7 @@ class BasketItemDTO
         $this->data = $data;
         $this->id = $id;
         $this->item_type = $item_type;
+        $this->mcc = $mcc;
         $this->name = $name;
         $this->paid_amount = $paid_amount;
         $this->payer = $payer;
