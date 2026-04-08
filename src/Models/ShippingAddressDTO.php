@@ -10,13 +10,11 @@ class ShippingAddressDTO
     public $shipping_date;
     public $tracking_code;
     public $zip_code;
-    public $contact_phone; // Added new property
 
     public function __construct(
         $address = null,
         $city = null,
         $contact_name = null,
-        $contact_phone = null,
         $country = null,
         $shipping_date = null,
         $tracking_code = null,
@@ -25,7 +23,6 @@ class ShippingAddressDTO
         $this->address = $address;
         $this->city = $city;
         $this->contact_name = $contact_name;
-        $this->contact_phone = $contact_phone;
         $this->country = $country;
         $this->shipping_date = $shipping_date;
         $this->tracking_code = $tracking_code;
