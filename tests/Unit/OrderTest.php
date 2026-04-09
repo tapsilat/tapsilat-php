@@ -1115,14 +1115,11 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        // Expect 2 calls: 1 for order creation, 1 for checkout URL
-        $apiMock->expects($this->exactly(2))
+        // Expect 1 call: 1 for order creation
+        $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
-                if ($endpoint === '/order/create') {
-                    return $expectedApiJsonResponse;
-                }
-                return $checkoutResponse;
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse) {
+                return $expectedApiJsonResponse;
             });
 
         $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com', '+90 555 123-45-67');
