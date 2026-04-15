@@ -43,29 +43,20 @@ class OrgCreateBusinessRequest
 
     public function toArray()
     {
-        $data = array_filter([
-            'address' => $this->address,
-            'business_name' => $this->business_name,
-            'business_type' => $this->business_type,
-            'email' => $this->email,
-            'first_name' => $this->first_name,
-            'identity_number' => $this->identity_number,
-            'last_name' => $this->last_name,
-            'phone' => $this->phone,
-            'tax_number' => $this->tax_number,
-            'tax_office' => $this->tax_office,
-            'zip_code' => $this->zip_code,
-        ], function ($value) {
-            return $value !== null;
-        });
-        
-        // Handle nested DTOs if any
-        foreach ($data as $key => $val) {
-            if (is_object($val) && method_exists($val, 'toArray')) {
-                $data[$key] = $val->toArray();
+        $result = [];
+        foreach (get_object_vars($this) as $key => $value) {
+            if ($value !== null) {
+                if (is_object($value) && method_exists($value, 'toArray')) {
+                    $result[$key] = $value->toArray();
+                } elseif (is_array($value)) {
+                    $result[$key] = array_map(function ($item) {
+                        return is_object($item) && method_exists($item, 'toArray') ? $item->toArray() : $item;
+                    }, $value);
+                } else {
+                    $result[$key] = $value;
+                }
             }
         }
-
-        return $data;
+        return $result;
     }
 }

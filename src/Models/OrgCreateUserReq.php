@@ -34,26 +34,20 @@ class OrgCreateUserReq
 
     public function toArray()
     {
-        $data = array_filter([
-            'conversation_id' => $this->conversation_id,
-            'email' => $this->email,
-            'first_name' => $this->first_name,
-            'identity_number' => $this->identity_number,
-            'is_mail_verified' => $this->is_mail_verified,
-            'last_name' => $this->last_name,
-            'phone' => $this->phone,
-            'reference_id' => $this->reference_id,
-        ], function ($value) {
-            return $value !== null;
-        });
-        
-        // Handle nested DTOs if any
-        foreach ($data as $key => $val) {
-            if (is_object($val) && method_exists($val, 'toArray')) {
-                $data[$key] = $val->toArray();
+        $result = [];
+        foreach (get_object_vars($this) as $key => $value) {
+            if ($value !== null) {
+                if (is_object($value) && method_exists($value, 'toArray')) {
+                    $result[$key] = $value->toArray();
+                } elseif (is_array($value)) {
+                    $result[$key] = array_map(function ($item) {
+                        return is_object($item) && method_exists($item, 'toArray') ? $item->toArray() : $item;
+                    }, $value);
+                } else {
+                    $result[$key] = $value;
+                }
             }
         }
-
-        return $data;
+        return $result;
     }
 }
