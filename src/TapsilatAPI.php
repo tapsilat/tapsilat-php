@@ -122,22 +122,34 @@ class TapsilatAPI
     {
         $endpoint = '/order/create';
 
+        // Validate GSM number if provided
         if ($order->buyer && $order->buyer->gsm_number) {
             $order->buyer->gsm_number = Validators::validateGsmNumber($order->buyer->gsm_number);
         }
 
-        if (isset($order->enabled_installments)) {
-            if (is_array($order->enabled_installments)) {
-                $installmentsStr = implode(',', $order->enabled_installments);
-            } else {
-                $installmentsStr = str_replace(['[', ']', ' '], '', $order->enabled_installments);
-            }
-            $order->enabled_installments = Validators::validateInstallments($installmentsStr);
+        // Validate installments if provided
+        if (isset($order->enabled_installments) && $order->enabled_installments) {
+            $order->enabled_installments = Validators::validateInstallments($order->enabled_installments);
         }
 
         $payload = $order->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        return new OrderResponse($response);
+        $orderResponse = new OrderResponse($response);
+
+        // Auto-fetch checkout URL if missing from initial response (backward compatibility / UX)
+        if (!$orderResponse->getCheckoutUrl() && $orderResponse->getReferenceId()) {
+            try {
+                $refreshedOrder = $this->getOrder($orderResponse->getReferenceId());
+                if ($refreshedOrder->getCheckoutUrl()) {
+                    $response['checkout_url'] = $refreshedOrder->getCheckoutUrl();
+                    $orderResponse = new OrderResponse($response);
+                }
+            } catch (\Exception $e) {
+                // Ignore errors during auto-fetch, returning original response
+            }
+        }
+
+        return $orderResponse;
     }
 
     public function orderAccounting(OrderAccountingRequest $request)
@@ -294,21 +306,31 @@ class TapsilatAPI
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function terminateOrder(TerminateRequest $request)
+    public function terminateOrderTerm($termReferenceId, $reason)
+    {
+        $endpoint = '/order/term/terminate';
+        $payload = [
+            'term_reference_id' => $termReferenceId,
+            'reason' => $reason
+        ];
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function orderTerminate(TerminateRequest $request)
     {
         $endpoint = '/order/terminate';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function manualCallback(OrderManualCallbackDTO $request)
+    public function orderManualCallback(OrderManualCallbackDTO $request)
     {
         $endpoint = '/order/callback';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function relatedUpdate(OrderRelatedReferenceDTO $request)
+    public function orderRelatedUpdate(OrderRelatedReferenceDTO $request)
     {
         $endpoint = '/order/releated';
         $payload = $request->toArray();
@@ -475,6 +497,12 @@ class TapsilatAPI
         return new SubscriptionRedirectResponse($response);
     }
 
+
+    public function healthCheck()
+    {
+        $endpoint = '/system/health-check';
+        return $this->makeRequest('GET', $endpoint);
+    }
 
     public static function verifyWebhook($payload, $signature, $secret)
     {
