@@ -32,6 +32,7 @@ class OrderCreateDTO
     public $submerchants;
     public $tax_amount;
     public $three_d_force;
+    public $order_vpos_id;
 
     public function __construct(
         $amount = null,
@@ -41,11 +42,12 @@ class OrderCreateDTO
         ?array $basket_items = null,
         ?BillingAddressDTO $billing_address = null,
         ?CheckoutDesignDTO $checkout_design = null,
+        ?array $consents = null,
         $conversation_id = null,
         ?array $enabled_installments = null,
         $external_reference_id = null,
         ?array $metadata = null,
-        ?OrderCardDTO $order_cards = null,
+        ?array $order_cards = null,
         $paid_amount = null,
         $partial_payment = null,
         $payment_failure_url = null,
@@ -54,15 +56,15 @@ class OrderCreateDTO
         ?array $payment_options = null,
         $payment_success_url = null,
         ?array $payment_terms = null,
-        $pf_sub_merchant = null,
+        ?OrderPFSubMerchantDTO $pf_sub_merchant = null,
         $redirect_failure_url = null,
         $redirect_success_url = null,
         ?ShippingAddressDTO $shipping_address = null,
-        ?array $consents = null,
         ?SubOrganizationDTO $sub_organization = null,
         ?array $submerchants = null,
         $tax_amount = null,
-        $three_d_force = null
+        $three_d_force = null,
+        $order_vpos_id = null
     ) {
         $this->amount = $amount;
         $this->currency = $currency;
@@ -93,6 +95,7 @@ class OrderCreateDTO
         $this->submerchants = $submerchants;
         $this->tax_amount = $tax_amount;
         $this->three_d_force = $three_d_force;
+        $this->order_vpos_id = $order_vpos_id;
     }
 
     public function toArray()

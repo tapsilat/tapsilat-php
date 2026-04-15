@@ -1,17 +1,15 @@
 <?php
 namespace Tapsilat\Models;
 
-class UpdateBasketItemRequest
+class OrderConsentDTO
 {
-    public $order_reference_id;
-    public $basket_item;
+    public $title;
+    public $url;
 
-    public function __construct(
-        $order_reference_id = null,
-        $basket_item = null
-    ) {
-        $this->order_reference_id = $order_reference_id;
-        $this->basket_item = $basket_item;
+    public function __construct($title = null, $url = null)
+    {
+        $this->title = $title;
+        $this->url = $url;
     }
 
     public function toArray()

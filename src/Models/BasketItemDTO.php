@@ -25,17 +25,17 @@ class BasketItemDTO
     public function __construct(
         $category1 = null,
         $category2 = null,
-        $commission_amount = null,
         $coupon = null,
         $coupon_discount = null,
         $data = null,
         $id = null,
         $item_type = null,
-        $mcc = null,
         $name = null,
         $paid_amount = null,
-        ?BasketItemPayerDTO $payer = null,
         $price = null,
+        $commission_amount = null,
+        $mcc = null,
+        ?BasketItemPayerDTO $payer = null,
         $quantity = null,
         $quantity_float = null,
         $quantity_unit = null,
@@ -44,17 +44,17 @@ class BasketItemDTO
     ) {
         $this->category1 = $category1;
         $this->category2 = $category2;
-        $this->commission_amount = $commission_amount;
         $this->coupon = $coupon;
         $this->coupon_discount = $coupon_discount;
         $this->data = $data;
         $this->id = $id;
         $this->item_type = $item_type;
-        $this->mcc = $mcc;
         $this->name = $name;
         $this->paid_amount = $paid_amount;
-        $this->payer = $payer;
         $this->price = $price;
+        $this->commission_amount = $commission_amount;
+        $this->mcc = $mcc;
+        $this->payer = $payer;
         $this->quantity = $quantity;
         $this->quantity_float = $quantity_float;
         $this->quantity_unit = $quantity_unit;
@@ -67,8 +67,12 @@ class BasketItemDTO
         $result = [];
         foreach (get_object_vars($this) as $key => $value) {
             if ($value !== null) {
-                if ($value instanceof BasketItemPayerDTO) {
+                if (is_object($value) && method_exists($value, 'toArray')) {
                     $result[$key] = $value->toArray();
+                } elseif (is_array($value)) {
+                    $result[$key] = array_map(function ($item) {
+                        return is_object($item) && method_exists($item, 'toArray') ? $item->toArray() : $item;
+                    }, $value);
                 } else {
                     $result[$key] = $value;
                 }
