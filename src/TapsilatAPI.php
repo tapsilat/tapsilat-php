@@ -1,36 +1,36 @@
 <?php
 namespace Tapsilat;
 
-use Tapsilat\Models\OrderCreateDTO;
+use Tapsilat\Models\OrderCreateRequest;
 use Tapsilat\Models\OrderResponse;
-use Tapsilat\Models\RefundOrderDTO;
-use Tapsilat\Models\CancelOrderDTO;
-use Tapsilat\Models\RefundAllOrderDTO;
-use Tapsilat\Models\OrderPaymentDetailDTO;
-use Tapsilat\Models\OrderPaymentTermCreateDTO;
-use Tapsilat\Models\OrderPaymentTermUpdateDTO;
-use Tapsilat\Models\OrderPaymentTermDeleteDTO;
+use Tapsilat\Models\RefundOrderRequest;
+use Tapsilat\Models\CancelOrderRequest;
+use Tapsilat\Models\RefundAllOrderRequest;
+use Tapsilat\Models\OrderPaymentDetailRequest;
+use Tapsilat\Models\OrderPaymentTermCreateRequest;
+use Tapsilat\Models\OrderPaymentTermUpdateRequest;
+use Tapsilat\Models\OrderPaymentTermDeleteRequest;
 use Tapsilat\Models\OrderTermRefundRequest;
 use Tapsilat\Models\TerminateRequest;
-use Tapsilat\Models\OrderManualCallbackDTO;
-use Tapsilat\Models\OrderRelatedReferenceDTO;
+use Tapsilat\Models\OrderManualCallbackRequest;
+use Tapsilat\Models\OrderRelatedReferenceRequest;
 use Tapsilat\Models\AddBasketItemRequest;
 use Tapsilat\Models\RemoveBasketItemRequest;
 use Tapsilat\Models\UpdateBasketItemRequest;
-use Tapsilat\Models\CallbackURLDTO;
+use Tapsilat\Models\UpdateCallbackURLRequest;
 use Tapsilat\Models\OrgCreateBusinessRequest;
 use Tapsilat\Models\GetUserLimitRequest;
 use Tapsilat\Models\SetLimitUserRequest;
 use Tapsilat\Models\GetVposRequest;
-use Tapsilat\Models\OrgCreateUserReq;
-use Tapsilat\Models\OrgUserVerifyReq;
-use Tapsilat\Models\OrgUserMobileVerifyReq;
+use Tapsilat\Models\OrgCreateUserRequest;
+use Tapsilat\Models\OrgUserVerifyRequest;
+use Tapsilat\Models\OrgUserMobileVerifyRequest;
 use Tapsilat\Models\SubscriptionCreateRequest;
 use Tapsilat\Models\SubscriptionGetRequest;
 use Tapsilat\Models\SubscriptionCancelRequest;
 use Tapsilat\Models\SubscriptionRedirectRequest;
 use Tapsilat\Models\SubscriptionCreateResponse;
-use Tapsilat\Models\SubscriptionDetail;
+use Tapsilat\Models\SubscriptionDetailResponse;
 use Tapsilat\Models\SubscriptionRedirectResponse;
 use Tapsilat\Models\OrderAccountingRequest;
 use Tapsilat\Models\OrderPostAuthRequest;
@@ -118,7 +118,7 @@ class TapsilatAPI
         return $response ? json_decode($response, true) : [];
     }
 
-    public function createOrder(OrderCreateDTO $order)
+    public function createOrder(OrderCreateRequest $order)
     {
         $endpoint = '/order/create';
 
@@ -225,28 +225,28 @@ class TapsilatAPI
         return $response->getCheckoutUrl();
     }
 
-    public function cancelOrder(CancelOrderDTO $request)
+    public function cancelOrder(CancelOrderRequest $request)
     {
         $endpoint = '/order/cancel';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function refundOrder(RefundOrderDTO $refundData)
+    public function refundOrder(RefundOrderRequest $refundData)
     {
         $endpoint = '/order/refund';
         $payload = $refundData->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function refundAllOrder(RefundAllOrderDTO $request)
+    public function refundAllOrder(RefundAllOrderRequest $request)
     {
         $endpoint = '/order/refund-all';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function getOrderPaymentDetails(OrderPaymentDetailDTO $request)
+    public function getOrderPaymentDetails(OrderPaymentDetailRequest $request)
     {
         $endpoint = '/order/payment-details';
         $payload = $request->toArray();
@@ -278,21 +278,21 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint, $params);
     }
 
-    public function createOrderTerm(OrderPaymentTermCreateDTO $term)
+    public function createOrderTerm(OrderPaymentTermCreateRequest $term)
     {
         $endpoint = '/order/term';
         $payload = $term->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function deleteOrderTerm(OrderPaymentTermDeleteDTO $request)
+    public function deleteOrderTerm(OrderPaymentTermDeleteRequest $request)
     {
         $endpoint = '/order/term';
         $payload = $request->toArray();
         return $this->makeRequest('DELETE', $endpoint, null, $payload);
     }
 
-    public function updateOrderTerm(OrderPaymentTermUpdateDTO $term)
+    public function updateOrderTerm(OrderPaymentTermUpdateRequest $term)
     {
         $endpoint = '/order/term';
         $payload = $term->toArray();
@@ -306,15 +306,7 @@ class TapsilatAPI
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function terminateOrderTerm($termReferenceId, $reason)
-    {
-        $endpoint = '/order/term/terminate';
-        $payload = [
-            'term_reference_id' => $termReferenceId,
-            'reason' => $reason
-        ];
-        return $this->makeRequest('POST', $endpoint, null, $payload);
-    }
+
 
     public function orderTerminate(TerminateRequest $request)
     {
@@ -323,14 +315,14 @@ class TapsilatAPI
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function orderManualCallback(OrderManualCallbackDTO $request)
+    public function orderManualCallback(OrderManualCallbackRequest $request)
     {
         $endpoint = '/order/callback';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function orderRelatedUpdate(OrderRelatedReferenceDTO $request)
+    public function orderRelatedUpdate(OrderRelatedReferenceRequest $request)
     {
         $endpoint = '/order/releated';
         $payload = $request->toArray();
@@ -370,7 +362,7 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint);
     }
 
-    public function updateOrganizationCallback(CallbackURLDTO $request)
+    public function updateOrganizationCallback(UpdateCallbackURLRequest $request)
     {
         $endpoint = '/organization/callback';
         $payload = $request->toArray();
@@ -436,21 +428,21 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint, $params);
     }
 
-    public function createOrganizationUser(OrgCreateUserReq $request)
+    public function createOrganizationUser(OrgCreateUserRequest $request)
     {
         $endpoint = '/organization/user/create';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function verifyOrganizationUser(OrgUserVerifyReq $request)
+    public function verifyOrganizationUser(OrgUserVerifyRequest $request)
     {
         $endpoint = '/organization/user/verify';
         $payload = $request->toArray();
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    public function verifyOrganizationUserMobile(OrgUserMobileVerifyReq $request)
+    public function verifyOrganizationUserMobile(OrgUserMobileVerifyRequest $request)
     {
         $endpoint = '/organization/user/verify-mobile';
         $payload = $request->toArray();
@@ -464,7 +456,7 @@ class TapsilatAPI
         $endpoint = '/subscription';
         $payload = $request->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        return new SubscriptionDetail($response);
+        return new SubscriptionDetailResponse($response);
     }
 
     public function cancelSubscription(SubscriptionCancelRequest $request)
@@ -498,11 +490,7 @@ class TapsilatAPI
     }
 
 
-    public function healthCheck()
-    {
-        $endpoint = '/system/health-check';
-        return $this->makeRequest('GET', $endpoint);
-    }
+
 
     public static function verifyWebhook($payload, $signature, $secret)
     {

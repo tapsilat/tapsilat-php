@@ -18,9 +18,6 @@ class BuyerDTO
     public $title;
     public $zip_code;
     public $registration_address;
-    public $income_type;
-    public $education;
-    public $occupation;
 
     public function __construct(
         $name = null,
@@ -37,10 +34,7 @@ class BuyerDTO
         $registration_date = null,
         $title = null,
         $zip_code = null,
-        $registration_address = null,
-        $income_type = null,
-        $education = null,
-        $occupation = null
+        $registration_address = null
     ) {
         $this->name = $name;
         $this->surname = $surname;
@@ -57,9 +51,6 @@ class BuyerDTO
         $this->title = $title;
         $this->zip_code = $zip_code;
         $this->registration_address = $registration_address;
-        $this->income_type = $income_type;
-        $this->education = $education;
-        $this->occupation = $occupation;
     }
 
     public function toArray()
