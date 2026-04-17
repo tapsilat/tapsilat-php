@@ -7,7 +7,7 @@ class OrderManualCallbackRequest
     public $conversation_id;
 
     public function __construct(
-        $reference_id = null,
+        $reference_id,
         $conversation_id = null
     ) {
         $this->reference_id = $reference_id;

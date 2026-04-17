@@ -7,9 +7,8 @@ class OrderRelatedReferenceRequest
     public $related_reference_id;
 
     public function __construct(
-        $reference_id = null,
-        $related_reference_id = null
-    ) {
+        $reference_id,
+        $related_reference_id) {
         $this->reference_id = $reference_id;
         $this->related_reference_id = $related_reference_id;
     }

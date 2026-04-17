@@ -35,10 +35,10 @@ class OrderCreateRequest
 
 
     public function __construct(
-        $amount = null,
-        $currency = null,
-        $locale = null,
-        ?BuyerDTO $buyer = null,
+        $amount,
+        $currency,
+        $locale,
+        ?BuyerDTO $buyer,
         ?array $basket_items = null,
         ?BillingAddressDTO $billing_address = null,
         ?CheckoutDesignDTO $checkout_design = null,

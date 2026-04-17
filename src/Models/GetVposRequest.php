@@ -6,8 +6,7 @@ class GetVposRequest
     public $currency_id;
 
     public function __construct(
-        $currency_id = null
-    ) {
+        $currency_id) {
         $this->currency_id = $currency_id;
     }
 

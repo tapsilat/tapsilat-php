@@ -7,9 +7,8 @@ class RemoveBasketItemRequest
     public $basket_item_id;
 
     public function __construct(
-        $order_reference_id = null,
-        $basket_item_id = null
-    ) {
+        $order_reference_id,
+        $basket_item_id) {
         $this->order_reference_id = $order_reference_id;
         $this->basket_item_id = $basket_item_id;
     }

@@ -7,9 +7,8 @@ class OrderPaymentTermDeleteRequest
     public $term_reference_id;
 
     public function __construct(
-        $order_id = null,
-        $term_reference_id = null
-    ) {
+        $order_id,
+        $term_reference_id) {
         $this->order_id = $order_id;
         $this->term_reference_id = $term_reference_id;
     }

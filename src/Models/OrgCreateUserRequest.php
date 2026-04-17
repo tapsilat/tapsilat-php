@@ -13,15 +13,14 @@ class OrgCreateUserRequest
     public $reference_id;
 
     public function __construct(
-        $conversation_id = null,
-        $email = null,
-        $first_name = null,
-        $identity_number = null,
+        $conversation_id,
+        $email,
+        $first_name,
+        $identity_number,
         $is_mail_verified = false,
-        $last_name = null,
-        $phone = null,
-        $reference_id = null
-    ) {
+        $last_name,
+        $phone,
+        $reference_id) {
         $this->conversation_id = $conversation_id;
         $this->email = $email;
         $this->first_name = $first_name;

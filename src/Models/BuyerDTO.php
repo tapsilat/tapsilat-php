@@ -20,8 +20,8 @@ class BuyerDTO
     public $registration_address;
 
     public function __construct(
-        $name = null,
-        $surname = null,
+        $name,
+        $surname,
         $birth_date = null,
         $city = null,
         $country = null,

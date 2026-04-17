@@ -16,18 +16,17 @@ class OrgCreateBusinessRequest
     public $zip_code;
 
     public function __construct(
-        $address = null,
-        $business_name = null,
-        $business_type = null,
-        $email = null,
-        $first_name = null,
-        $identity_number = null,
-        $last_name = null,
-        $phone = null,
-        $tax_number = null,
-        $tax_office = null,
-        $zip_code = null
-    ) {
+        $address,
+        $business_name,
+        $business_type,
+        $email,
+        $first_name,
+        $identity_number,
+        $last_name,
+        $phone,
+        $tax_number,
+        $tax_office,
+        $zip_code) {
         $this->address = $address;
         $this->business_name = $business_name;
         $this->business_type = $business_type;
