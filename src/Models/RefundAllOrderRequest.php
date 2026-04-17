@@ -1,7 +1,7 @@
 <?php
 namespace Tapsilat\Models;
 
-class RefundAllOrderDTO
+class RefundAllOrderRequest
 {
     public $reference_id;
 

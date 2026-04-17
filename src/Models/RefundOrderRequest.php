@@ -1,14 +1,23 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrgUserMobileVerifyReq
+class RefundOrderRequest
 {
-    public $user_id;
+    public $amount;
+    public $reference_id;
+    public $order_item_id;
+    public $order_item_payment_id;
 
     public function __construct(
-        $user_id = null
+        $amount = null,
+        $reference_id = null,
+        $order_item_id = null,
+        $order_item_payment_id = null
     ) {
-        $this->user_id = $user_id;
+        $this->amount = $amount;
+        $this->reference_id = $reference_id;
+        $this->order_item_id = $order_item_id;
+        $this->order_item_payment_id = $order_item_payment_id;
     }
 
     public function toArray()

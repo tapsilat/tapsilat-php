@@ -1,7 +1,7 @@
 <?php
 namespace Tapsilat\Models;
 
-class CallbackURLDTO
+class UpdateCallbackURLRequest
 {
     public $callback_url;
     public $cancel_callback_url;

@@ -1,17 +1,14 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrderRelatedReferenceDTO
+class OrgUserVerifyRequest
 {
-    public $reference_id;
-    public $related_reference_id;
+    public $user_id;
 
     public function __construct(
-        $reference_id = null,
-        $related_reference_id = null
+        $user_id = null
     ) {
-        $this->reference_id = $reference_id;
-        $this->related_reference_id = $related_reference_id;
+        $this->user_id = $user_id;
     }
 
     public function toArray()

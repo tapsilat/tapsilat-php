@@ -1,7 +1,7 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubscriptionDetail implements \JsonSerializable
+class SubscriptionDetailResponse implements \JsonSerializable
 {
     private $data;
 

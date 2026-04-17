@@ -1,7 +1,7 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrderCreateDTO
+class OrderCreateRequest
 {
     public $amount;
     public $currency;
@@ -32,7 +32,7 @@ class OrderCreateDTO
     public $submerchants;
     public $tax_amount;
     public $three_d_force;
-    public $order_vpos_id;
+
 
     public function __construct(
         $amount = null,
@@ -63,8 +63,7 @@ class OrderCreateDTO
         ?SubOrganizationDTO $sub_organization = null,
         ?array $submerchants = null,
         $tax_amount = null,
-        $three_d_force = null,
-        $order_vpos_id = null
+        $three_d_force = null
     ) {
         $this->amount = $amount;
         $this->currency = $currency;
@@ -95,7 +94,6 @@ class OrderCreateDTO
         $this->submerchants = $submerchants;
         $this->tax_amount = $tax_amount;
         $this->three_d_force = $three_d_force;
-        $this->order_vpos_id = $order_vpos_id;
     }
 
     public function toArray()

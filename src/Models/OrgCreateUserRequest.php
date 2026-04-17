@@ -1,23 +1,35 @@
 <?php
 namespace Tapsilat\Models;
 
-class RefundOrderDTO
+class OrgCreateUserRequest
 {
-    public $amount;
+    public $conversation_id;
+    public $email;
+    public $first_name;
+    public $identity_number;
+    public $is_mail_verified;
+    public $last_name;
+    public $phone;
     public $reference_id;
-    public $order_item_id;
-    public $order_item_payment_id;
 
     public function __construct(
-        $amount = null,
-        $reference_id = null,
-        $order_item_id = null,
-        $order_item_payment_id = null
+        $conversation_id = null,
+        $email = null,
+        $first_name = null,
+        $identity_number = null,
+        $is_mail_verified = false,
+        $last_name = null,
+        $phone = null,
+        $reference_id = null
     ) {
-        $this->amount = $amount;
+        $this->conversation_id = $conversation_id;
+        $this->email = $email;
+        $this->first_name = $first_name;
+        $this->identity_number = $identity_number;
+        $this->is_mail_verified = $is_mail_verified;
+        $this->last_name = $last_name;
+        $this->phone = $phone;
         $this->reference_id = $reference_id;
-        $this->order_item_id = $order_item_id;
-        $this->order_item_payment_id = $order_item_payment_id;
     }
 
     public function toArray()

@@ -1,35 +1,17 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrgCreateUserReq
+class OrderManualCallbackRequest
 {
-    public $conversation_id;
-    public $email;
-    public $first_name;
-    public $identity_number;
-    public $is_mail_verified;
-    public $last_name;
-    public $phone;
     public $reference_id;
+    public $conversation_id;
 
     public function __construct(
-        $conversation_id = null,
-        $email = null,
-        $first_name = null,
-        $identity_number = null,
-        $is_mail_verified = false,
-        $last_name = null,
-        $phone = null,
-        $reference_id = null
+        $reference_id = null,
+        $conversation_id = null
     ) {
-        $this->conversation_id = $conversation_id;
-        $this->email = $email;
-        $this->first_name = $first_name;
-        $this->identity_number = $identity_number;
-        $this->is_mail_verified = $is_mail_verified;
-        $this->last_name = $last_name;
-        $this->phone = $phone;
         $this->reference_id = $reference_id;
+        $this->conversation_id = $conversation_id;
     }
 
     public function toArray()

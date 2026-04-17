@@ -1,17 +1,14 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrderPaymentDetailDTO
+class OrgUserMobileVerifyRequest
 {
-    public $reference_id;
-    public $conversation_id;
+    public $user_id;
 
     public function __construct(
-        $reference_id = null,
-        $conversation_id = null
+        $user_id = null
     ) {
-        $this->reference_id = $reference_id;
-        $this->conversation_id = $conversation_id;
+        $this->user_id = $user_id;
     }
 
     public function toArray()

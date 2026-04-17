@@ -1,32 +1,38 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrderPaymentTermUpdateDTO
+class OrderPaymentTermCreateRequest
 {
+    public $order_id;
     public $term_reference_id;
     public $amount;
     public $due_date;
-    public $paid_date;
+    public $term_sequence;
     public $required;
     public $status;
-    public $term_sequence;
+    public $data;
+    public $paid_date;
 
     public function __construct(
+        $order_id = null,
+        $term_reference_id = null,
         $amount = null,
         $due_date = null,
-        $paid_date = null,
+        $term_sequence = null,
         $required = null,
         $status = null,
-        $term_reference_id = null,
-        $term_sequence = null
+        $data = null,
+        $paid_date = null
     ) {
+        $this->order_id = $order_id;
+        $this->term_reference_id = $term_reference_id;
         $this->amount = $amount;
         $this->due_date = $due_date;
-        $this->paid_date = $paid_date;
+        $this->term_sequence = $term_sequence;
         $this->required = $required;
         $this->status = $status;
-        $this->term_reference_id = $term_reference_id;
-        $this->term_sequence = $term_sequence;
+        $this->data = $data;
+        $this->paid_date = $paid_date;
     }
 
     public function toArray()

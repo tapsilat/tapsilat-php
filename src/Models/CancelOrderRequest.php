@@ -1,14 +1,14 @@
 <?php
 namespace Tapsilat\Models;
 
-class OrgUserVerifyReq
+class CancelOrderRequest
 {
-    public $user_id;
+    public $reference_id;
 
     public function __construct(
-        $user_id = null
+        $reference_id = null
     ) {
-        $this->user_id = $user_id;
+        $this->reference_id = $reference_id;
     }
 
     public function toArray()
