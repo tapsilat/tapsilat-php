@@ -5,7 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Tapsilat\TapsilatAPI;
 use Tapsilat\APIException;
 use Tapsilat\Models\BuyerDTO;
-use Tapsilat\Models\OrderCreateDTO;
+use Tapsilat\Models\OrderCreateRequest;
 use Tapsilat\Models\BasketItemDTO;
 use Tapsilat\Models\BasketItemPayerDTO;
 use Tapsilat\Models\BillingAddressDTO;
@@ -17,7 +17,7 @@ use Tapsilat\Models\SubscriptionCancelRequest;
 use Tapsilat\Models\SubscriptionRedirectRequest;
 use Tapsilat\Models\SubscriptionBillingDTO;
 use Tapsilat\Models\SubscriptionUserDTO;
-use Tapsilat\Models\OrderConsent;
+use Tapsilat\Models\OrderConsentDTO;
 use Tapsilat\Validators;
 
 /**
@@ -112,7 +112,7 @@ function processOrderCreation($client, $orderPayload, $scenarioName)
 function runScenario1BasicOrder($client)
 {
     $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
-    $orderPayload = new OrderCreateDTO(100.00, "TRY", "tr", $buyer);
+    $orderPayload = new OrderCreateRequest(100.00, "TRY", "tr", $buyer);
     processOrderCreation($client, $orderPayload, "Scenario 1: Basic Order");
 }
 
@@ -164,7 +164,7 @@ function runScenario2OrderWithBasketItems($client)
         1 // quantity
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         100.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -207,7 +207,7 @@ function runScenario3OrderWithAddresses($client)
         "34000" // zip_code
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         100.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -244,7 +244,7 @@ function runScenario4InstallmentsAndPaymentMethods($client)
 {
     $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         1200.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -289,7 +289,7 @@ function runScenario5DetailedCheckoutDesign($client)
         "#000000" // text_color
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         250.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -310,11 +310,11 @@ function runScenario11OrderWithConsents($client)
     $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
     
     $consents = [
-        new OrderConsent("User Agreement", "https://example.com/agreement"),
-        new OrderConsent("Privacy Policy", "https://example.com/privacy")
+        new OrderConsentDTO("User Agreement", "https://example.com/agreement"),
+        new OrderConsentDTO("Privacy Policy", "https://example.com/privacy")
     ];
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         150.00, // amount
         "TRY", // currency
         "tr", // locale

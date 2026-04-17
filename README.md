@@ -88,7 +88,7 @@ try {
 ### Order Create Process
 ```php
 use Tapsilat\Models\BuyerDTO;
-use Tapsilat\Models\OrderCreateDTO;
+use Tapsilat\Models\OrderCreateRequest;
 
 // GSM number will be automatically validated in createOrder
 $buyer = new BuyerDTO(
@@ -100,7 +100,7 @@ $buyer = new BuyerDTO(
     "test@example.com", // email
     "+90 555 123-45-67" // Will be cleaned automatically
 );
-$order = new OrderCreateDTO(100, "TRY", "tr", $buyer);
+$order = new OrderCreateRequest(100, "TRY", "tr", $buyer);
 
 $orderResponse = $client->createOrder($order);
 ```
@@ -141,9 +141,9 @@ $client->cancelOrder($referenceId);
 
 ### Order Refund Process
 ```php
-use Tapsilat\Models\RefundOrderDTO;
+use Tapsilat\Models\RefundOrderRequest;
 
-$refundData = new RefundOrderDTO(100, "mock-uuid-reference-id");
+$refundData = new RefundOrderRequest(100, "mock-uuid-reference-id");
 $client->refundOrder($refundData);
 ```
 
@@ -183,11 +183,11 @@ $client->getOrderTerm($termReferenceId);
 
 ### Create Order Term
 ```php
-use Tapsilat\Models\OrderPaymentTermCreateDTO;
+use Tapsilat\Models\OrderPaymentTermCreateRequest;
 
 $orderId = "mock-order-id";
 $terms = [
-    new OrderPaymentTermCreateDTO(
+    new OrderPaymentTermCreateRequest(
         $orderId,
         "TERM-123000456",
         5000,
@@ -196,7 +196,7 @@ $terms = [
         true,
         "PENDING"
     ),
-    new OrderPaymentTermCreateDTO(
+    new OrderPaymentTermCreateRequest(
         $orderId,
         "TERM-123000457",
         5000,
@@ -221,9 +221,9 @@ $client->deleteOrderTerm($orderId, $termReferenceId);
 
 ### Update Order Term
 ```php
-use Tapsilat\Models\OrderPaymentTermUpdateDTO;
+use Tapsilat\Models\OrderPaymentTermUpdateRequest;
 
-$term = new OrderPaymentTermUpdateDTO(
+$term = new OrderPaymentTermUpdateRequest(
     "TERM-123000457",
     null, // amount
     "2025-12-10 00:00", // due_date
