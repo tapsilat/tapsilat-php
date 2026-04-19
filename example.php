@@ -5,7 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Tapsilat\TapsilatAPI;
 use Tapsilat\APIException;
 use Tapsilat\Models\BuyerDTO;
-use Tapsilat\Models\OrderCreateDTO;
+use Tapsilat\Models\OrderCreateRequest;
 use Tapsilat\Models\BasketItemDTO;
 use Tapsilat\Models\BasketItemPayerDTO;
 use Tapsilat\Models\BillingAddressDTO;
@@ -17,6 +17,7 @@ use Tapsilat\Models\SubscriptionCancelRequest;
 use Tapsilat\Models\SubscriptionRedirectRequest;
 use Tapsilat\Models\SubscriptionBillingDTO;
 use Tapsilat\Models\SubscriptionUserDTO;
+use Tapsilat\Models\OrderConsentDTO;
 use Tapsilat\Validators;
 
 /**
@@ -63,7 +64,7 @@ function getApiClient()
 }
 
 /**
- * Process order creation with error handling
+ * Process order creation with error handling and logging
  */
 function processOrderCreation($client, $orderPayload, $scenarioName)
 {
@@ -75,20 +76,33 @@ function processOrderCreation($client, $orderPayload, $scenarioName)
         return;
     }
 
+    $sanitizedName = strtolower(str_replace([' ', ':'], '_', $scenarioName));
+    $resultsDir = __DIR__ . '/test_results';
+    if (!is_dir($resultsDir)) {
+        mkdir($resultsDir, 0777, true);
+    }
+
+    // Capture Input (Request Payload)
+    $inputData = $orderPayload->toArray();
+    file_put_contents("$resultsDir/{$sanitizedName}_input.json", json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
     try {
         $response = $client->createOrder($orderPayload);
         echo "Order created successfully!\n";
         echo "Reference ID: " . $response->getReferenceId() . "\n";
+
+        // Capture Output (Response)
+        file_put_contents("$resultsDir/{$sanitizedName}_output.json", json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         // Get checkout URL using reference_id (like Python version)
         $checkoutUrl = $client->getCheckoutUrl($response->getReferenceId());
         echo "Checkout URL: " . $checkoutUrl . "\n";
     } catch (APIException $e) {
         echo "API Error: " . $e->error . "\n";
-        echo "Status Code: " . $e->statusCode . "\n";
-        echo "Code: " . $e->code . "\n";
+        file_put_contents("$resultsDir/{$sanitizedName}_output.json", json_encode(['error' => $e->error, 'code' => $e->code, 'statusCode' => $e->statusCode], JSON_PRETTY_PRINT));
     } catch (Exception $e) {
         echo "Unexpected error: " . $e->getMessage() . "\n";
+        file_put_contents("$resultsDir/{$sanitizedName}_output.json", json_encode(['error' => $e->getMessage()], JSON_PRETTY_PRINT));
     }
 }
 
@@ -98,7 +112,7 @@ function processOrderCreation($client, $orderPayload, $scenarioName)
 function runScenario1BasicOrder($client)
 {
     $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
-    $orderPayload = new OrderCreateDTO(100.00, "TRY", "tr", $buyer);
+    $orderPayload = new OrderCreateRequest(100.00, "TRY", "tr", $buyer);
     processOrderCreation($client, $orderPayload, "Scenario 1: Basic Order");
 }
 
@@ -150,7 +164,7 @@ function runScenario2OrderWithBasketItems($client)
         1 // quantity
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         100.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -193,7 +207,7 @@ function runScenario3OrderWithAddresses($client)
         "34000" // zip_code
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         100.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -230,7 +244,7 @@ function runScenario4InstallmentsAndPaymentMethods($client)
 {
     $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         1200.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -275,7 +289,7 @@ function runScenario5DetailedCheckoutDesign($client)
         "#000000" // text_color
     );
 
-    $orderPayload = new OrderCreateDTO(
+    $orderPayload = new OrderCreateRequest(
         250.00, // amount
         "TRY", // currency
         "tr", // locale
@@ -286,6 +300,49 @@ function runScenario5DetailedCheckoutDesign($client)
     );
 
     processOrderCreation($client, $orderPayload, "Scenario 5: Detailed Checkout Design");
+}
+
+/**
+ * Scenario 11: Order with Consents
+ */
+function runScenario11OrderWithConsents($client)
+{
+    $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
+    
+    $consents = [
+        new OrderConsentDTO("User Agreement", "https://example.com/agreement"),
+        new OrderConsentDTO("Privacy Policy", "https://example.com/privacy")
+    ];
+
+    $orderPayload = new OrderCreateRequest(
+        150.00, // amount
+        "TRY", // currency
+        "tr", // locale
+        $buyer, // buyer
+        null, // basket_items
+        null, // billing_address
+        null, // checkout_design
+        null, // conversation_id
+        null, // enabled_installments
+        null, // external_reference_id
+        null, // metadata
+        null, // order_cards
+        null, // paid_amount
+        null, // partial_payment
+        null, // payment_failure_url
+        null, // payment_methods
+        null, // payment_mode
+        null, // payment_options
+        null, // payment_success_url
+        null, // payment_terms
+        null, // pf_sub_merchant
+        null, // redirect_failure_url
+        null, // redirect_success_url
+        null, // shipping_address
+        $consents // consents
+    );
+
+    processOrderCreation($client, $orderPayload, "Scenario 11: Order with Consents");
 }
 
 /**
@@ -422,6 +479,10 @@ function runScenario8SubscriptionDemo($client)
             $subscriptionDetail = $client->getSubscription($getRequest);
             echo "Subscription Title: " . $subscriptionDetail->getTitle() . "\n";
             echo "Subscription Amount: " . $subscriptionDetail->getAmount() . "\n";
+            
+            // Capture Subscription Detail Output
+            $resultsDir = __DIR__ . '/test_results';
+            file_put_contents("$resultsDir/scenario_8_subscription_detail_output.json", json_encode($subscriptionDetail, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
 
         // List subscriptions
@@ -463,6 +524,40 @@ function runScenario9OrganizationSettings($client)
     }
 }
 
+
+/**
+ * Scenario 10: Missing Endpoint Tests
+ */
+function runScenario10MissingEndpoints($client)
+{
+    echo str_repeat("#", 16) . "\n";
+    echo "Scenario 10: Missing Endpoint Tests\n";
+
+    if (!$client) {
+        echo "Client is not initialized.\n";
+        return;
+    }
+
+    try {
+        echo "Fetching Currencies...\n";
+        $currencies = $client->getOrganizationCurrencies();
+        print_r($currencies);
+
+        echo "Fetching Scopes...\n";
+        $scopes = $client->getOrganizationScopes();
+        print_r($scopes);
+
+        echo "Fetching Organization Callback...\n";
+        $cb = $client->getOrganizationCallback();
+        print_r($cb);
+
+    } catch (Tapsilat\APIException $e) {
+        echo "API Error: " . $e->error . "\n";
+    } catch (Exception $e) {
+        echo "Unexpected error: " . $e->getMessage() . "\n";
+    }
+}
+
 // Main execution
 if (php_sapi_name() === 'cli') {
     echo "=== Tapsilat PHP SDK Usage Examples ===\n\n";
@@ -479,6 +574,8 @@ if (php_sapi_name() === 'cli') {
         runScenario7ValidationErrors($apiClient);
         runScenario8SubscriptionDemo($apiClient);
         runScenario9OrganizationSettings($apiClient);
+        runScenario10MissingEndpoints($apiClient);
+        runScenario11OrderWithConsents($apiClient);
     }
 
     echo "\n=== Examples completed ===\n";

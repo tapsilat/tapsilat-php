@@ -1,20 +1,34 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubmerchantDTO
+class OrgCreateUserRequest
 {
-    public $amount;
-    public $merchant_reference_id;
-    public $order_basket_item_id;
+    public $conversation_id;
+    public $email;
+    public $first_name;
+    public $identity_number;
+    public $is_mail_verified;
+    public $last_name;
+    public $phone;
+    public $reference_id;
 
     public function __construct(
-        $amount = null,
-        $merchant_reference_id = null,
-        $order_basket_item_id = null
-    ) {
-        $this->amount = $amount;
-        $this->merchant_reference_id = $merchant_reference_id;
-        $this->order_basket_item_id = $order_basket_item_id;
+        $conversation_id,
+        $email,
+        $first_name,
+        $identity_number,
+        $is_mail_verified = false,
+        $last_name,
+        $phone,
+        $reference_id) {
+        $this->conversation_id = $conversation_id;
+        $this->email = $email;
+        $this->first_name = $first_name;
+        $this->identity_number = $identity_number;
+        $this->is_mail_verified = $is_mail_verified;
+        $this->last_name = $last_name;
+        $this->phone = $phone;
+        $this->reference_id = $reference_id;
     }
 
     public function toArray()

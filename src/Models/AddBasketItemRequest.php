@@ -1,20 +1,16 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubmerchantDTO
+class AddBasketItemRequest
 {
-    public $amount;
-    public $merchant_reference_id;
-    public $order_basket_item_id;
+    public $order_reference_id;
+    public $basket_item;
 
     public function __construct(
-        $amount = null,
-        $merchant_reference_id = null,
-        $order_basket_item_id = null
-    ) {
-        $this->amount = $amount;
-        $this->merchant_reference_id = $merchant_reference_id;
-        $this->order_basket_item_id = $order_basket_item_id;
+        $order_reference_id,
+        $basket_item) {
+        $this->order_reference_id = $order_reference_id;
+        $this->basket_item = $basket_item;
     }
 
     public function toArray()

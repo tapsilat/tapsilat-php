@@ -1,20 +1,16 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubmerchantDTO
+class SetLimitUserRequest
 {
-    public $amount;
-    public $merchant_reference_id;
-    public $order_basket_item_id;
+    public $limit_id;
+    public $user_id;
 
     public function __construct(
-        $amount = null,
-        $merchant_reference_id = null,
-        $order_basket_item_id = null
-    ) {
-        $this->amount = $amount;
-        $this->merchant_reference_id = $merchant_reference_id;
-        $this->order_basket_item_id = $order_basket_item_id;
+        $limit_id,
+        $user_id) {
+        $this->limit_id = $limit_id;
+        $this->user_id = $user_id;
     }
 
     public function toArray()

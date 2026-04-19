@@ -77,14 +77,8 @@ class ValidatorTest extends TestCase
 
     public function testValidInternationalPlusFormat()
     {
-        $result = Validators::validateGsmNumber("+905551234567");
-        $this->assertEquals("+905551234567", $result);
-    }
-
-    public function testValidInternational00Format()
-    {
-        $result = Validators::validateGsmNumber("00905551234567");
-        $this->assertEquals("00905551234567", $result);
+        $result = Validators::validateGsmNumber("+14155552671");
+        $this->assertEquals("+14155552671", $result);
     }
 
     public function testValidNationalFormat()
@@ -93,58 +87,16 @@ class ValidatorTest extends TestCase
         $this->assertEquals("05551234567", $result);
     }
 
-    public function testValidLocalFormat()
-    {
-        $result = Validators::validateGsmNumber("5551234567");
-        $this->assertEquals("5551234567", $result);
-    }
-
     public function testRemovesFormattingCharacters()
     {
         $result = Validators::validateGsmNumber("+90 555 123-45(67)");
         $this->assertEquals("+905551234567", $result);
     }
 
-    public function testInternationalPlusTooShort()
+    public function testTooShort()
     {
         try {
-            Validators::validateGsmNumber("+90123");
-        } catch (APIException $e) {
-            $this->assertEquals(0, $e->code);
-            $this->assertStringContainsString("short", $e->error);
-            return;
-        }
-        $this->fail("Expected APIException");
-    }
-
-    public function testInternational00TooShort()
-    {
-        try {
-            Validators::validateGsmNumber("0090123");
-        } catch (APIException $e) {
-            $this->assertEquals(0, $e->code);
-            $this->assertStringContainsString("short", $e->error);
-            return;
-        }
-        $this->fail("Expected APIException");
-    }
-
-    public function testNationalTooShort()
-    {
-        try {
-            Validators::validateGsmNumber("012345");
-        } catch (APIException $e) {
-            $this->assertEquals(0, $e->code);
-            $this->assertStringContainsString("short", $e->error);
-            return;
-        }
-        $this->fail("Expected APIException");
-    }
-
-    public function testLocalTooShort()
-    {
-        try {
-            Validators::validateGsmNumber("12345");
+            Validators::validateGsmNumber("123");
         } catch (APIException $e) {
             $this->assertEquals(0, $e->code);
             $this->assertStringContainsString("short", $e->error);

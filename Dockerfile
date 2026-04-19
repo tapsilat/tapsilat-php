@@ -10,6 +10,13 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock* ./
 
 # Install dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip
+
+# Install dependencies
 RUN composer install --no-interaction --no-progress
 
 # Copy source code

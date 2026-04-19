@@ -5,6 +5,12 @@ use PHPUnit\Framework\TestCase;
 use Tapsilat\TapsilatAPI;
 use Tapsilat\APIException;
 use Tapsilat\Models\BuyerDTO;
+use Tapsilat\Models\OrderPaymentDetailDTO;
+use Tapsilat\Models\CancelOrderDTO;
+use Tapsilat\Models\RefundAllOrderDTO;
+use Tapsilat\Models\OrderRelatedReferenceDTO;
+use Tapsilat\Models\TerminateRequest;
+use Tapsilat\Models\OrderManualCallbackDTO;
 use Tapsilat\Models\OrderCreateDTO;
 use Tapsilat\Models\BasketItemDTO;
 use Tapsilat\Models\BasketItemPayerDTO;
@@ -22,6 +28,54 @@ use Tapsilat\Models\SubOrganizationDTO;
 
 class OrderTest extends TestCase
 {
+
+    public function testOrderToArrayFull()
+    {
+        $buyer = new BuyerDTO("John", "Doe", "1990-01-01", "Istanbul", "TR", "test@example.com", "+905551234567", "b-1", "11111111111", "127.0.0.1", "2025-01-01", "2025-01-01", "Mr.", "34000", "Reg Address");
+        $payer = new BasketItemPayerDTO("Payer Addr", "payer-ref", "TaxOfc", "Payer Title", "PERSONAL", "VAT123");
+        $item = new BasketItemDTO("Cat1", "Cat2", "C-10", 10.0, "data", "itm-1", "PHYSICAL", "Laptop", 90.0, 100.0, 2.5, "1234", $payer, 1, 1.0, "pcs", "sub-key", "85.0");
+        $billing = new BillingAddressDTO("Bill Addr", "PERSONAL", "TR", "Istanbul", "Contact", "+905550001122", "TR", "District", "TaxOfc", "Title", "VAT000", "34000", "Neighbour", "Str1", "Str2", "Str3");
+        $design = new CheckoutDesignDTO("#FFF", "#000", "#111", "#222", "logo.png", "<html></html>", "#333", "#444", "#555", "http://redir");
+        $consent = new \Tapsilat\Models\OrderConsent("Consent Title", "http://consent");
+        $metadata = new MetadataDTO("Key1", "Val1");
+        $card = new OrderCardDTO("card-1", 1);
+        $term = new PaymentTermDTO(50.0, "data-term", "2025-10-10", "2025-10-10", true, "PENDING", "term-ref", 1);
+        $pfSub = new OrderPFSubMerchantDTO("1234", "PF Name", "org-1", "PF Addr", "City", "TR", "TRY", "pf-1", "NAT1", "34000", "NIN1", "http://sub", "SW", "TM");
+        $shipping = new ShippingAddressDTO("Ship Addr", "City", "Contact Name", "TR", "2025-10-10", "TRK-1", "34000");
+        $subOrg = new SubOrganizationDTO("ACQ", "Sub Addr", "First", "Last", "TRY", "sub@sub.com", "+905550001133", "TR00", "1111", "Legal Title", "Org Name", "ext-id", "sm-key", "sm-type", "tax-num", "tax-ofc");
+        $subMerch = new SubmerchantDTO(40.0, "m-ref", "itm-1");
+
+        $order = new OrderCreateDTO(
+            150.0, "TRY", "tr", $buyer, [$item], $billing, $design, [$consent],
+            "conv-id", [3, 6], "ext-ref", [$metadata], [$card],
+            150.0, false, "http://fail", true, "auth", ["credit_card"],
+            "http://success", [$term], $pfSub, "http://redir-fail", "http://redir-success",
+            $shipping, $subOrg, [$subMerch], 15.0, true
+        );
+
+        $jsonData = $order->toArray();
+
+        $this->assertEquals(150.0, $jsonData["amount"]);
+        $this->assertEquals("TRY", $jsonData["currency"]);
+        $this->assertEquals("tr", $jsonData["locale"]);
+        $this->assertEquals("John", $jsonData["buyer"]["name"]);
+        $this->assertEquals("TR", $jsonData["buyer"]["country"]);
+        $this->assertEquals("Laptop", $jsonData["basket_items"][0]["name"]);
+        $this->assertEquals("Payer Addr", $jsonData["basket_items"][0]["payer"]["address"]);
+        $this->assertEquals("Bill Addr", $jsonData["billing_address"]["address"]);
+        $this->assertEquals("#FFF", $jsonData["checkout_design"]["input_background_color"]);
+        $this->assertEquals("Consent Title", $jsonData["consents"][0]["title"]);
+        $this->assertEquals("Key1", $jsonData["metadata"][0]["key"]);
+        $this->assertEquals("card-1", $jsonData["order_cards"][0]["card_id"]);
+        $this->assertEquals(50.0, $jsonData["payment_terms"][0]["amount"]);
+        $this->assertEquals("PF Name", $jsonData["pf_sub_merchant"]["name"]);
+        $this->assertEquals("Ship Addr", $jsonData["shipping_address"]["address"]);
+        $this->assertEquals("ACQ", $jsonData["sub_organization"]["acquirer"]);
+        $this->assertEquals(40.0, $jsonData["submerchants"][0]["amount"]);
+        $this->assertTrue($jsonData["three_d_force"]);
+    }
+
+
     public function testOrderToArray()
     {
         $buyer = new BuyerDTO("John", "Doe", null, null, null, "test@example.com");
@@ -39,6 +93,8 @@ class OrderTest extends TestCase
         $this->assertEquals("Doe", $jsonData["buyer"]["surname"]);
         $this->assertEquals("test@example.com", $jsonData["buyer"]["email"]);
     }
+
+
 
     public function testBasketItemPayerDTOToArray()
     {
@@ -59,13 +115,14 @@ class OrderTest extends TestCase
             null,
             null,
             null,
-            null,
             "BI101",
             "PHYSICAL",
             "Binocular",
             null,
-            $payerData,
             19.99,
+            null,
+            null,
+            $payerData,
             1
         );
         $itemArray = $item->toArray();
@@ -92,7 +149,7 @@ class OrderTest extends TestCase
 
     public function testCheckoutDesignDTOToArray()
     {
-        $design = new CheckoutDesignDTO(null, null, null, null, "http://example.com/logo.png", null, "#FF0000");
+        $design = new CheckoutDesignDTO(null, null, null, null, "http://example.com/logo.png", null, null, null, "#FF0000");
         $designArray = $design->toArray();
         $this->assertEquals("#FF0000", $designArray["pay_button_color"]);
         $this->assertEquals("http://example.com/logo.png", $designArray["logo"]);
@@ -128,7 +185,7 @@ class OrderTest extends TestCase
 
     public function testOrderPFSubMerchantDTOToArray()
     {
-        $pfSub = new OrderPFSubMerchantDTO(null, null, null, null, "123456789", "1234", "John Doe");
+        $pfSub = new OrderPFSubMerchantDTO("1234", "John Doe", null, null, null, null, null, "123456789");
         $pfSubArray = $pfSub->toArray();
         $this->assertEquals("123456789", $pfSubArray["id"]);
         $this->assertEquals("John Doe", $pfSubArray["name"]);
@@ -200,6 +257,7 @@ class OrderTest extends TestCase
         $expectedApiJsonResponse = [
             'order_id' => 'mock-03d03353-78bc-4432-9da6-1433ecd7fbbb',
             'reference_id' => 'mock-03d03353-9b5b-4289-b231-ffbe50f8a79d',
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-03d03353-9b5b-4289-b231-ffbe50f8a79d',
         ];
 
         $checkoutResponse = [
@@ -212,16 +270,6 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        // Expect 2 calls: 1 for order creation, 1 for checkout URL
-        $apiMock->expects($this->exactly(2))
-            ->method('makeRequest')
-            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
-                if ($endpoint === '/order/create') {
-                    return $expectedApiJsonResponse;
-                }
-                return $checkoutResponse;
-            });
-
         $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com');
         $orderPayloadDto = new OrderCreateDTO(
             100,
@@ -229,6 +277,17 @@ class OrderTest extends TestCase
             'tr',
             $buyer
         );
+
+        // Expect 1 call: 1 for order creation
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/create', null, $orderPayloadDto->toArray())
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
+                if ($endpoint === '/order/create') {
+                    return $expectedApiJsonResponse;
+                }
+                return $checkoutResponse;
+            });
 
         $orderResponseObj = $apiMock->createOrder($orderPayloadDto);
 
@@ -242,6 +301,7 @@ class OrderTest extends TestCase
         $expectedApiJsonResponse = [
             'order_id' => 'order_basket',
             'reference_id' => 'ref_basket',
+            'checkout_url' => 'https://checkout.test.dev?reference_id=ref_basket',
         ];
 
         $checkoutResponse = [
@@ -253,16 +313,6 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        // Expect 2 calls: 1 for order creation, 1 for checkout URL
-        $apiMock->expects($this->exactly(2))
-            ->method('makeRequest')
-            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
-                if ($endpoint === '/order/create') {
-                    return $expectedApiJsonResponse;
-                }
-                return $checkoutResponse;
-            });
-
         $buyerData = new BuyerDTO('Test', 'User');
         $basketItemPayer = new BasketItemPayerDTO(null, 'payer_ref0_item1');
         $basketItem1 = new BasketItemDTO(
@@ -271,13 +321,14 @@ class OrderTest extends TestCase
             null,
             null,
             null,
-            null,
             'B001',
-            null,
+            'PHYSICAL',
             'Item 1',
             null,
-            $basketItemPayer,
             10.0,
+            null,
+            null,
+            $basketItemPayer,
             1
         );
         $basketItem2 = new BasketItemDTO(
@@ -286,9 +337,8 @@ class OrderTest extends TestCase
             null,
             null,
             null,
-            null,
             'B002',
-            null,
+            'PHYSICAL',
             'Item 2',
             null,
             new BasketItemPayerDTO(null, 'payer_ref1_item2'),
@@ -303,6 +353,17 @@ class OrderTest extends TestCase
             $buyerData,
             [$basketItem1, $basketItem2]
         );
+
+        // Expect 1 call: 1 for order creation
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/create', null, $orderPayloadDto->toArray())
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
+                if ($endpoint === '/order/create') {
+                    return $expectedApiJsonResponse;
+                }
+                return $checkoutResponse;
+            });
 
         $apiResponse = $apiMock->createOrder($orderPayloadDto);
 
@@ -496,7 +557,7 @@ class OrderTest extends TestCase
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_CANCEL_ORDER_GET_ORDER_NOT_FOUND');
 
-        $apiMock->cancelOrder($referenceId);
+        $apiMock->cancelOrder(new CancelOrderDTO($referenceId));
     }
 
     public function testCancelOrderSuccess()
@@ -518,7 +579,7 @@ class OrderTest extends TestCase
             ->with('POST', '/order/cancel', null, $expectedPayload)
             ->willReturn($expectedApiJsonResponse);
 
-        $apiResponse = $apiMock->cancelOrder($referenceId);
+        $apiResponse = $apiMock->cancelOrder(new CancelOrderDTO($referenceId));
 
         $this->assertEquals($expectedApiJsonResponse, $apiResponse);
     }
@@ -534,7 +595,7 @@ class OrderTest extends TestCase
         $refundPayloadDto = new RefundOrderDTO(50.0, 'mock-reference-id');
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/refund', null, $this->anything())
+            ->with('POST', '/order/refund', null, $refundPayloadDto->toArray())
             ->willReturn($expectedApiJsonResponse);
 
         $apiResponse = $apiMock->refundOrder($refundPayloadDto);
@@ -553,7 +614,7 @@ class OrderTest extends TestCase
         $refundPayloadDto = new RefundOrderDTO(0, 'order_ref_invalid');
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/refund', null, $this->anything())
+            ->with('POST', '/order/refund', null, $refundPayloadDto->toArray())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -577,7 +638,7 @@ class OrderTest extends TestCase
             ->with('POST', '/order/refund-all', null, $expectedPayload)
             ->willReturn($expectedApiJsonResponse);
 
-        $apiResponse = $apiMock->refundAllOrder($referenceId);
+        $apiResponse = $apiMock->refundAllOrder(new RefundAllOrderDTO($referenceId));
 
         $this->assertEquals($expectedApiJsonResponse, $apiResponse);
     }
@@ -600,7 +661,7 @@ class OrderTest extends TestCase
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_NOT_FOUND_FOR_REFUND_ALL');
 
-        $apiMock->refundAllOrder($referenceId);
+        $apiMock->refundAllOrder(new RefundAllOrderDTO($referenceId));
     }
 
     public function testGetOrderPaymentDetailsSuccessWithRefId()
@@ -617,7 +678,7 @@ class OrderTest extends TestCase
             ->with('GET', "/order/{$referenceId}/payment-details")
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->getOrderPaymentDetails($referenceId);
+        $result = $apiMock->getOrderPaymentDetailsById($referenceId);
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -641,7 +702,7 @@ class OrderTest extends TestCase
             ->with('POST', '/order/payment-details', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->getOrderPaymentDetails($referenceId, $conversationId);
+        $result = $apiMock->getOrderPaymentDetails(new OrderPaymentDetailDTO($referenceId, $conversationId));
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -666,7 +727,7 @@ class OrderTest extends TestCase
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_ORDER_PAYMENT_DETAIL_ORDER_DETAIL_NOT_FOUND');
 
-        $apiMock->getOrderPaymentDetails($referenceId);
+        $apiMock->getOrderPaymentDetailsById($referenceId);
     }
 
     public function testGetOrderStatusSuccess()
@@ -766,7 +827,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('GET', "/order/term/{$termReferenceId}")
+            ->with('GET', '/order/term', ['term_reference_id' => $termReferenceId])
             ->willReturn($expectedResponse);
 
         $result = $apiMock->getOrderTerm($termReferenceId);
@@ -785,7 +846,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('GET', "/order/term/{$termReferenceId}")
+            ->with('GET', '/order/term', ['term_reference_id' => $termReferenceId])
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -813,7 +874,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term', null, $payloadDto->toArray())
             ->willReturn($expectedResponse);
 
         $result = $apiMock->createOrderTerm($payloadDto);
@@ -843,7 +904,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term', null, $payloadDto->toArray())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -871,7 +932,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term', null, $this->anything())
+            ->with('POST', '/order/term', null, $payloadDto->toArray())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -893,10 +954,10 @@ class OrderTest extends TestCase
         $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/delete', null, $expectedPayload)
+            ->with('DELETE', '/order/term', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->deleteOrderTerm($orderId, $termReferenceId);
+        $result = $apiMock->deleteOrderTerm(new \Tapsilat\Models\OrderPaymentTermDeleteDTO($orderId, $termReferenceId));
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -914,13 +975,13 @@ class OrderTest extends TestCase
         $expectedPayload = ['order_id' => $orderId, 'term_reference_id' => $termReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/delete', null, $expectedPayload)
+            ->with('DELETE', '/order/term', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_REMOVE_PAYMENT_TERM_NOT_FOUND');
 
-        $apiMock->deleteOrderTerm($orderId, $termReferenceId);
+        $apiMock->deleteOrderTerm(new \Tapsilat\Models\OrderPaymentTermDeleteDTO($orderId, $termReferenceId));
     }
 
     public function testUpdateOrderTermSuccess()
@@ -941,7 +1002,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/update', null, $this->anything())
+            ->with('PATCH', '/order/term', null, $payloadDto->toArray())
             ->willReturn($expectedResponse);
 
         $result = $apiMock->updateOrderTerm($payloadDto);
@@ -963,7 +1024,7 @@ class OrderTest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/term/update', null, $this->anything())
+            ->with('PATCH', '/order/term', null, $payloadDto->toArray())
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
@@ -990,7 +1051,7 @@ class OrderTest extends TestCase
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_TERMINATE_ORDER_NOT_FOUND');
 
-        $apiMock->orderTerminate($referenceId);
+        $apiMock->orderTerminate(new TerminateRequest($referenceId));
     }
 
     public function testOrderTerminateOrderSuccess()
@@ -1008,7 +1069,7 @@ class OrderTest extends TestCase
             ->with('POST', '/order/terminate', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->orderTerminate($referenceId);
+        $result = $apiMock->orderTerminate(new TerminateRequest($referenceId));
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -1026,13 +1087,13 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/manual-callback', null, $expectedPayload)
+            ->with('POST', '/order/callback', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ACTION_FAILED');
 
-        $apiMock->orderManualCallback($referenceId, $conversationId);
+        $apiMock->orderManualCallback(new OrderManualCallbackDTO($referenceId, $conversationId));
     }
 
     public function testOrderCallbackOrderSuccess()
@@ -1048,10 +1109,10 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'conversation_id' => $conversationId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/manual-callback', null, $expectedPayload)
+            ->with('POST', '/order/callback', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->orderManualCallback($referenceId, $conversationId);
+        $result = $apiMock->orderManualCallback(new OrderManualCallbackDTO($referenceId, $conversationId));
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -1069,13 +1130,13 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/related-update', null, $expectedPayload)
+            ->with('PATCH', '/order/releated', null, $expectedPayload)
             ->willThrowException(new APIException(400, $apiErrorContent['code'], $apiErrorContent['error']));
 
         $this->expectException(APIException::class);
         $this->expectExceptionMessage('ORDER_NOT_FOUND');
 
-        $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
+        $apiMock->orderRelatedUpdate(new OrderRelatedReferenceDTO($referenceId, $relatedReferenceId));
     }
 
     public function testOrderRelatedUpdateSuccess()
@@ -1091,10 +1152,10 @@ class OrderTest extends TestCase
         $expectedPayload = ['reference_id' => $referenceId, 'related_reference_id' => $relatedReferenceId];
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('POST', '/order/related-update', null, $expectedPayload)
+            ->with('PATCH', '/order/releated', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->orderRelatedUpdate($referenceId, $relatedReferenceId);
+        $result = $apiMock->orderRelatedUpdate(new OrderRelatedReferenceDTO($referenceId, $relatedReferenceId));
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -1104,6 +1165,7 @@ class OrderTest extends TestCase
         $expectedApiJsonResponse = [
             'order_id' => 'mock-order-with-gsm',
             'reference_id' => 'mock-ref-with-gsm',
+            'checkout_url' => 'https://checkout.test.dev?reference_id=mock-ref-with-gsm',
         ];
 
         $checkoutResponse = [
@@ -1115,14 +1177,11 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        // Expect 2 calls: 1 for order creation, 1 for checkout URL
-        $apiMock->expects($this->exactly(2))
+        // Expect 1 call: 1 for order creation
+        $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse, $checkoutResponse) {
-                if ($endpoint === '/order/create') {
-                    return $expectedApiJsonResponse;
-                }
-                return $checkoutResponse;
+            ->willReturnCallback(function ($method, $endpoint) use ($expectedApiJsonResponse) {
+                return $expectedApiJsonResponse;
             });
 
         $buyer = new BuyerDTO('John', 'Doe', null, null, null, 'test@example.com', '+90 555 123-45-67');

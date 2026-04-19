@@ -13,3 +13,4 @@ Thumbs.db
 # Docker
 .docker/
 docker-compose.override.yml 
+php_models_props.json

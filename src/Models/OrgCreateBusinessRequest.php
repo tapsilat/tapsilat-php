@@ -1,28 +1,42 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubscriptionBillingDTO
+class OrgCreateBusinessRequest
 {
     public $address;
-    public $city;
-    public $contact_name;
-    public $country;
-    public $vat_number;
+    public $business_name;
+    public $business_type;
+    public $email;
+    public $first_name;
+    public $identity_number;
+    public $last_name;
+    public $phone;
+    public $tax_number;
+    public $tax_office;
     public $zip_code;
 
     public function __construct(
-        $address = null,
-        $city = null,
-        $contact_name = null,
-        $country = null,
-        $vat_number = null,
-        $zip_code = null
-    ) {
+        $address,
+        $business_name,
+        $business_type,
+        $email,
+        $first_name,
+        $identity_number,
+        $last_name,
+        $phone,
+        $tax_number,
+        $tax_office,
+        $zip_code) {
         $this->address = $address;
-        $this->city = $city;
-        $this->contact_name = $contact_name;
-        $this->country = $country;
-        $this->vat_number = $vat_number;
+        $this->business_name = $business_name;
+        $this->business_type = $business_type;
+        $this->email = $email;
+        $this->first_name = $first_name;
+        $this->identity_number = $identity_number;
+        $this->last_name = $last_name;
+        $this->phone = $phone;
+        $this->tax_number = $tax_number;
+        $this->tax_office = $tax_office;
         $this->zip_code = $zip_code;
     }
 

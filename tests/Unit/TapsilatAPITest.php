@@ -27,7 +27,7 @@ class TapsilatAPITest extends TestCase
 
         $apiMock->expects($this->once())
             ->method('makeRequest')
-            ->with('GET', '/health')
+            ->with('GET', '/system/health-check')
             ->willReturn($expectedResponse);
 
         $result = $apiMock->healthCheck();

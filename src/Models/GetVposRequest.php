@@ -1,20 +1,13 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubmerchantDTO
+class GetVposRequest
 {
-    public $amount;
-    public $merchant_reference_id;
-    public $order_basket_item_id;
+    public $currency_id;
 
     public function __construct(
-        $amount = null,
-        $merchant_reference_id = null,
-        $order_basket_item_id = null
-    ) {
-        $this->amount = $amount;
-        $this->merchant_reference_id = $merchant_reference_id;
-        $this->order_basket_item_id = $order_basket_item_id;
+        $currency_id) {
+        $this->currency_id = $currency_id;
     }
 
     public function toArray()

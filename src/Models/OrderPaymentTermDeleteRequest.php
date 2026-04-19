@@ -1,20 +1,16 @@
 <?php
 namespace Tapsilat\Models;
 
-class SubmerchantDTO
+class OrderPaymentTermDeleteRequest
 {
-    public $amount;
-    public $merchant_reference_id;
-    public $order_basket_item_id;
+    public $order_id;
+    public $term_reference_id;
 
     public function __construct(
-        $amount = null,
-        $merchant_reference_id = null,
-        $order_basket_item_id = null
-    ) {
-        $this->amount = $amount;
-        $this->merchant_reference_id = $merchant_reference_id;
-        $this->order_basket_item_id = $order_basket_item_id;
+        $order_id,
+        $term_reference_id) {
+        $this->order_id = $order_id;
+        $this->term_reference_id = $term_reference_id;
     }
 
     public function toArray()
