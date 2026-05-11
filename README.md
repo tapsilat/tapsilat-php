@@ -273,6 +273,21 @@ echo "Status: " . $health['status'];
 echo "Timestamp: " . $health['timestamp'];
 ```
 
+## System & Webhooks
+
+### Get System Definitions and Statuses
+```php
+$orderStatuses = $client->getSystemOrderStatuses();
+$basketItemTypes = $client->getSystemBasketItemTypes();
+$errorCodes = $client->getSystemErrorCodes();
+$paymentTermStatuses = $client->getSystemPaymentTermStatuses();
+$productTypes = $client->getSystemProductTypes();
+$shortcutTypes = $client->getSystemShortcutTypes();
+$transactionPaymentTypes = $client->getSystemTransactionPaymentTypes();
+$transactionPurposes = $client->getSystemTransactionPurposes();
+$transactionStatuses = $client->getSystemTransactionStatuses();
+```
+
 ### Webhook Handling
 
 #### Verify Webhook Signature

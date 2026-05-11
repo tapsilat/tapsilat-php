@@ -34,6 +34,8 @@ use Tapsilat\Models\SubscriptionDetailResponse;
 use Tapsilat\Models\SubscriptionRedirectResponse;
 use Tapsilat\Models\OrderAccountingRequest;
 use Tapsilat\Models\OrderPostAuthRequest;
+use Tapsilat\Models\OrderPaymentOptionsUpdateRequest;
+use Tapsilat\Models\SplitOrderItemPaymentRequest;
 
 class TapsilatAPI
 {
@@ -169,6 +171,54 @@ class TapsilatAPI
     public function getSystemOrderStatuses()
     {
         $endpoint = '/system/order-statuses';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemBasketItemTypes()
+    {
+        $endpoint = '/system/basket-item-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemErrorCodes()
+    {
+        $endpoint = '/system/error-codes';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemPaymentTermStatuses()
+    {
+        $endpoint = '/system/payment-term-statuses';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemProductTypes()
+    {
+        $endpoint = '/system/product-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemShortcutTypes()
+    {
+        $endpoint = '/system/shortcut-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionPaymentTypes()
+    {
+        $endpoint = '/system/transaction-payment-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionPurposes()
+    {
+        $endpoint = '/system/transaction-purposes';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionStatuses()
+    {
+        $endpoint = '/system/transaction-statuses';
         return $this->makeRequest('GET', $endpoint);
     }
 
@@ -348,6 +398,32 @@ class TapsilatAPI
         $endpoint = '/order/basket-item';
         $payload = $request->toArray();
         return $this->makeRequest('PATCH', $endpoint, null, $payload);
+    }
+
+    public function updatePaymentOptions(OrderPaymentOptionsUpdateRequest $request)
+    {
+        $endpoint = '/order/payment-options';
+        $payload = $request->toArray();
+        return $this->makeRequest('PATCH', $endpoint, null, $payload);
+    }
+
+    public function splitOrderItemPayment(SplitOrderItemPaymentRequest $request)
+    {
+        $endpoint = '/order/split';
+        $payload = $request->toArray();
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function orderCallback($id)
+    {
+        $endpoint = "/orders/{$id}/callback";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function orderVposQuery($id)
+    {
+        $endpoint = "/orders/{$id}/vpos-query";
+        return $this->makeRequest('GET', $endpoint);
     }
 
     public function getOrganizationSettings()

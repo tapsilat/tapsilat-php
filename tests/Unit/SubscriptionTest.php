@@ -9,7 +9,7 @@ use Tapsilat\Models\SubscriptionGetRequest;
 use Tapsilat\Models\SubscriptionCancelRequest;
 use Tapsilat\Models\SubscriptionRedirectRequest;
 use Tapsilat\Models\SubscriptionCreateResponse;
-use Tapsilat\Models\SubscriptionDetail;
+use Tapsilat\Models\SubscriptionDetailResponse;
 use Tapsilat\Models\SubscriptionRedirectResponse;
 
 class SubscriptionTest extends TestCase
@@ -79,7 +79,7 @@ class SubscriptionTest extends TestCase
         $request = new SubscriptionGetRequest();
         $result = $apiMock->getSubscription($request);
 
-        $this->assertInstanceOf(SubscriptionDetail::class, $result);
+        $this->assertInstanceOf(SubscriptionDetailResponse::class, $result);
     }
 
     public function testGetSubscriptionNotFound()
