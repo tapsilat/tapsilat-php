@@ -136,22 +136,8 @@ class TapsilatAPI
 
         $payload = $order->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        $orderResponse = new OrderResponse($response);
-
-        // Auto-fetch checkout URL if missing from initial response (backward compatibility / UX)
-        if (!$orderResponse->getCheckoutUrl() && $orderResponse->getReferenceId()) {
-            try {
-                $refreshedOrder = $this->getOrder($orderResponse->getReferenceId());
-                if ($refreshedOrder->getCheckoutUrl()) {
-                    $response['checkout_url'] = $refreshedOrder->getCheckoutUrl();
-                    $orderResponse = new OrderResponse($response);
-                }
-            } catch (\Exception $e) {
-                // Ignore errors during auto-fetch, returning original response
-            }
-        }
-
-        return $orderResponse;
+        
+        return new OrderResponse($response);
     }
 
     public function orderAccounting(OrderAccountingRequest $request)
