@@ -490,6 +490,24 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint, $params);
     }
 
+    public function getOrganizationSuborganizationDetails(string $id)
+    {
+        $endpoint = "/organization/suborganizations/{$id}";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getOrganizationSuborganizationSubmerchants(string $id)
+    {
+        $endpoint = "/organization/suborganizations/{$id}/submerchant";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getOrganizationCurrencyPresets()
+    {
+        $endpoint = '/organization/currency-presets';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
     public function createOrganizationUser(OrgCreateUserRequest $request)
     {
         $endpoint = '/organization/user/create';
