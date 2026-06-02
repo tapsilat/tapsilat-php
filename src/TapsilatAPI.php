@@ -34,6 +34,8 @@ use Tapsilat\Models\SubscriptionDetailResponse;
 use Tapsilat\Models\SubscriptionRedirectResponse;
 use Tapsilat\Models\OrderAccountingRequest;
 use Tapsilat\Models\OrderPostAuthRequest;
+use Tapsilat\Models\OrderPaymentOptionsUpdateRequest;
+use Tapsilat\Models\SplitOrderItemPaymentRequest;
 
 class TapsilatAPI
 {
@@ -134,22 +136,8 @@ class TapsilatAPI
 
         $payload = $order->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        $orderResponse = new OrderResponse($response);
-
-        // Auto-fetch checkout URL if missing from initial response (backward compatibility / UX)
-        if (!$orderResponse->getCheckoutUrl() && $orderResponse->getReferenceId()) {
-            try {
-                $refreshedOrder = $this->getOrder($orderResponse->getReferenceId());
-                if ($refreshedOrder->getCheckoutUrl()) {
-                    $response['checkout_url'] = $refreshedOrder->getCheckoutUrl();
-                    $orderResponse = new OrderResponse($response);
-                }
-            } catch (\Exception $e) {
-                // Ignore errors during auto-fetch, returning original response
-            }
-        }
-
-        return $orderResponse;
+        
+        return new OrderResponse($response);
     }
 
     public function orderAccounting(OrderAccountingRequest $request)
@@ -169,6 +157,54 @@ class TapsilatAPI
     public function getSystemOrderStatuses()
     {
         $endpoint = '/system/order-statuses';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemBasketItemTypes()
+    {
+        $endpoint = '/system/basket-item-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemErrorCodes()
+    {
+        $endpoint = '/system/error-codes';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemPaymentTermStatuses()
+    {
+        $endpoint = '/system/payment-term-statuses';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemProductTypes()
+    {
+        $endpoint = '/system/product-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemShortcutTypes()
+    {
+        $endpoint = '/system/shortcut-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionPaymentTypes()
+    {
+        $endpoint = '/system/transaction-payment-types';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionPurposes()
+    {
+        $endpoint = '/system/transaction-purposes';
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getSystemTransactionStatuses()
+    {
+        $endpoint = '/system/transaction-statuses';
         return $this->makeRequest('GET', $endpoint);
     }
 
@@ -350,6 +386,32 @@ class TapsilatAPI
         return $this->makeRequest('PATCH', $endpoint, null, $payload);
     }
 
+    public function updatePaymentOptions(OrderPaymentOptionsUpdateRequest $request)
+    {
+        $endpoint = '/order/payment-options';
+        $payload = $request->toArray();
+        return $this->makeRequest('PATCH', $endpoint, null, $payload);
+    }
+
+    public function splitOrderItemPayment(SplitOrderItemPaymentRequest $request)
+    {
+        $endpoint = '/order/split';
+        $payload = $request->toArray();
+        return $this->makeRequest('POST', $endpoint, null, $payload);
+    }
+
+    public function orderCallback($id)
+    {
+        $endpoint = "/orders/{$id}/callback";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function orderVposQuery($id)
+    {
+        $endpoint = "/orders/{$id}/vpos-query";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
     public function getOrganizationSettings()
     {
         $endpoint = '/organization/settings';
@@ -426,6 +488,24 @@ class TapsilatAPI
         $endpoint = '/organization/suborganizations';
         $params = ['page' => $page, 'per_page' => $perPage];
         return $this->makeRequest('GET', $endpoint, $params);
+    }
+
+    public function getOrganizationSuborganizationDetails(string $id)
+    {
+        $endpoint = "/organization/suborganizations/{$id}";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getOrganizationSuborganizationSubmerchants(string $id)
+    {
+        $endpoint = "/organization/suborganizations/{$id}/submerchant";
+        return $this->makeRequest('GET', $endpoint);
+    }
+
+    public function getOrganizationCurrencyPresets()
+    {
+        $endpoint = '/organization/currency-presets';
+        return $this->makeRequest('GET', $endpoint);
     }
 
     public function createOrganizationUser(OrgCreateUserRequest $request)

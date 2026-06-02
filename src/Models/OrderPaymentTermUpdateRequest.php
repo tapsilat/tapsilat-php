@@ -14,11 +14,12 @@ class OrderPaymentTermUpdateRequest
     public function __construct(
         $amount,
         $due_date,
-        $paid_date = null,
         $required,
         $status,
         $term_reference_id,
-        $term_sequence) {
+        $term_sequence,
+        $paid_date = null
+    ) {
         $this->amount = $amount;
         $this->due_date = $due_date;
         $this->paid_date = $paid_date;

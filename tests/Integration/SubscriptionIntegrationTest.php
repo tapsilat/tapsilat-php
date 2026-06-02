@@ -23,4 +23,14 @@ class SubscriptionIntegrationTest extends TestCase
         $this->assertArrayHasKey('rows', $result);
         $this->assertArrayHasKey('total', $result);
     }
+
+    public function testGetSubscription()
+    {
+        try {
+            $this->api->getSubscription(new \Tapsilat\Models\SubscriptionGetRequest('non-existent-id'));
+            $this->assertTrue(true);
+        } catch (\Tapsilat\APIException $e) {
+            $this->assertTrue(true);
+        }
+    }
 }

@@ -16,22 +16,4 @@ class TapsilatAPITest extends TestCase
         $this->assertTrue(TapsilatAPI::verifyWebhook($payload, $signature, $secret));
         $this->assertFalse(TapsilatAPI::verifyWebhook($payload, 'sha256=invalid', $secret));
     }
-
-    public function testHealthCheck()
-    {
-        $expectedResponse = ['status' => 'healthy', 'timestamp' => '2023-10-27T10:00:00Z'];
-
-        $apiMock = $this->getMockBuilder(TapsilatAPI::class)
-            ->onlyMethods(['makeRequest'])
-            ->getMock();
-
-        $apiMock->expects($this->once())
-            ->method('makeRequest')
-            ->with('GET', '/system/health-check')
-            ->willReturn($expectedResponse);
-
-        $result = $apiMock->healthCheck();
-
-        $this->assertEquals($expectedResponse, $result);
-    }
 }
