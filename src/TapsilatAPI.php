@@ -245,12 +245,15 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint, $params);
     }
 
-    public function getOrders($page = '1', $perPage = '10', $buyerId = '')
+    public function getOrders($page = '1', $perPage = '10', $buyerId = '', $status = null)
     {
         $endpoint = '/order/list';
         $params = ['page' => $page, 'per_page' => $perPage];
         if (!empty($buyerId)) {
             $params['buyer_id'] = $buyerId;
+        }
+        if ($status !== null) {
+            $params['status'] = $status;
         }
         return $this->makeRequest('GET', $endpoint, $params);
     }
@@ -473,7 +476,7 @@ class TapsilatAPI
 
     public function getOrganizationMeta($name)
     {
-        $endpoint = "/organization/meta/{$name}";
+        $endpoint = "/organization/metas/{$name}";
         return $this->makeRequest('GET', $endpoint);
     }
 

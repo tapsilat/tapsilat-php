@@ -9,6 +9,11 @@ class BasketItemPayerDTO
     public $title;
     public $type;
     public $vat;
+    public $name;
+    public $surname;
+    public $identity_number;
+    public $email;
+    public $phone;
 
     public function __construct(
         $address = null,
@@ -16,7 +21,12 @@ class BasketItemPayerDTO
         $tax_office = null,
         $title = null,
         $type = null,
-        $vat = null
+        $vat = null,
+        $name = null,
+        $surname = null,
+        $identity_number = null,
+        $email = null,
+        $phone = null
     ) {
         $this->address = $address;
         $this->reference_id = $reference_id;
@@ -24,6 +34,11 @@ class BasketItemPayerDTO
         $this->title = $title;
         $this->type = $type;
         $this->vat = $vat;
+        $this->name = $name;
+        $this->surname = $surname;
+        $this->identity_number = $identity_number;
+        $this->email = $email;
+        $this->phone = $phone;
     }
 
     public function toArray()

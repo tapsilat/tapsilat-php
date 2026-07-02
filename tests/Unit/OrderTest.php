@@ -1233,13 +1233,13 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $expectedParams = ['page' => $page, 'per_page' => $perPage, 'buyer_id' => $buyerId];
+        $expectedParams = ['page' => $page, 'per_page' => $perPage, 'buyer_id' => $buyerId, 'status' => 1];
         $apiMock->expects($this->once())
             ->method('makeRequest')
             ->with('GET', '/order/list', $expectedParams)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->getOrders($page, $perPage, $buyerId);
+        $result = $apiMock->getOrders($page, $perPage, $buyerId, 1);
 
         $this->assertEquals($expectedResponse, $result);
     }
