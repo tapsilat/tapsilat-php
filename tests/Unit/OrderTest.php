@@ -26,6 +26,10 @@ use Tapsilat\Models\ShippingAddressDTO;
 use Tapsilat\Models\SubmerchantDTO;
 use Tapsilat\Models\SubOrganizationDTO;
 
+use Tapsilat\Models\GetOrderPaymentsRequest;
+use Tapsilat\Models\OrderOIPDTO;
+
+
 class OrderTest extends TestCase
 {
 
@@ -1233,13 +1237,13 @@ class OrderTest extends TestCase
             ->onlyMethods(['makeRequest'])
             ->getMock();
 
-        $expectedParams = ['page' => $page, 'per_page' => $perPage, 'buyer_id' => $buyerId];
+        $expectedParams = ['page' => $page, 'per_page' => $perPage, 'buyer_id' => $buyerId, 'status' => 1];
         $apiMock->expects($this->once())
             ->method('makeRequest')
             ->with('GET', '/order/list', $expectedParams)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->getOrders($page, $perPage, $buyerId);
+        $result = $apiMock->getOrders($page, $perPage, $buyerId, 1);
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -1350,6 +1354,66 @@ class OrderTest extends TestCase
 
         $result = $apiMock->orderVposQuery($id);
 
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testGetOrderPayments()
+    {
+        $request = new GetOrderPaymentsRequest("order-123");
+        $expectedResponse = ['payments' => []];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/payments', null, $request->toArray())->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderPayments($request);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testGetOrderPdf()
+    {
+        $id = "order-123";
+        $expectedResponse = "raw-pdf-data";
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('GET', "/order/{$id}/export/pdf", null, null, true)->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderPdf($id);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testGetOrderExcel()
+    {
+        $id = "order-123";
+        $expectedResponse = "raw-excel-data";
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('GET', "/order/{$id}/export/excel", null, null, true)->willReturn($expectedResponse);
+
+        $result = $apiMock->getOrderExcel($id);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testCreateOrderRefundRequest()
+    {
+        $request = new \Tapsilat\Models\RefundOrderRequest(10.0, "order-123");
+        $expectedResponse = ['refund_id' => '123'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/refund-request', null, $request->toArray())->willReturn($expectedResponse);
+
+        $result = $apiMock->createOrderRefundRequest($request);
+        $this->assertEquals($expectedResponse, $result);
+    }
+
+    public function testAddOrderOip()
+    {
+        $request = new OrderOIPDTO(10.0, 1, "basket-1");
+        $expectedResponse = ['success' => true];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/oip', null, $request->toArray())->willReturn($expectedResponse);
+
+        $result = $apiMock->addOrderOip($request);
         $this->assertEquals($expectedResponse, $result);
     }
 }

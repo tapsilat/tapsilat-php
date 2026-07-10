@@ -119,7 +119,7 @@ $orderDetails = $client->getOrderByConversationId($conversationId);
 
 ### Get Order List
 ```php
-$orderList = $client->getOrderList($page = 1, $perPage = 5);
+$orderList = $client->getOrders($page = 1, $perPage = 5, $buyerId = "buy_1", $status = 1);
 ```
 
 ### Get Order Submerchants

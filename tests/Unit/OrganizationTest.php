@@ -5,6 +5,9 @@ use PHPUnit\Framework\TestCase;
 use Tapsilat\TapsilatAPI;
 use Tapsilat\APIException;
 
+use Tapsilat\Models\OrgUserTokenCreateReq;
+
+
 class OrganizationTest extends TestCase
 {
     public function testGetOrganizationSettingsSuccess()
@@ -53,5 +56,17 @@ class OrganizationTest extends TestCase
         $this->expectExceptionMessage('ORGANIZATION_ACCESS_DENIED');
 
         $apiMock->getOrganizationSettings();
+    }
+
+    public function testCreateOrganizationUserToken()
+    {
+        $request = new OrgUserTokenCreateReq("test@example.com");
+        $expectedResponse = ['token' => 'mock-token'];
+
+        $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
+        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/organization/user/token', null, $request->toArray())->willReturn($expectedResponse);
+
+        $result = $apiMock->createOrganizationUserToken($request);
+        $this->assertEquals($expectedResponse, $result);
     }
 }
