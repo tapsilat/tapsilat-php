@@ -3,6 +3,11 @@ namespace Tapsilat\Models;
 
 class BasketItemDTO
 {
+    public $status;
+    public $item_payments;
+    public $paidable_amount;
+    public $refunded_amount;
+    public $refundable_amount;
     public $category1;
     public $category2;
     public $commission_amount;
@@ -40,8 +45,13 @@ class BasketItemDTO
         $quantity_float = null,
         $quantity_unit = null,
         $sub_merchant_key = null,
-        $sub_merchant_price = null
+        $sub_merchant_price = null, $status = null, $item_payments = null, $paidable_amount = null, $refunded_amount = null, $refundable_amount = null
     ) {
+        $this->status = $status;
+        $this->item_payments = $item_payments;
+        $this->paidable_amount = $paidable_amount;
+        $this->refunded_amount = $refunded_amount;
+        $this->refundable_amount = $refundable_amount;
         $this->category1 = $category1;
         $this->category2 = $category2;
         $this->coupon = $coupon;

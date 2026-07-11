@@ -3,6 +3,16 @@ namespace Tapsilat\Models;
 
 class SubmerchantUpdateDTO
 {
+    public $currency_id;
+    public $status;
+    public $tax_number;
+    public $sub_merchant_key;
+    public $locale;
+    public $legal_company_title;
+    public $system_time;
+    public $organization_id;
+    public $conversation_id;
+    public $sub_merchant_external_id;
     public $address;
     public $city;
     public $country;
@@ -34,8 +44,18 @@ class SubmerchantUpdateDTO
         $tax_office = null,
         $zip_code = null,
         $district = null,
-        $iban_name = null
+        $iban_name = null, $currency_id = null, $status = null, $tax_number = null, $sub_merchant_key = null, $locale = null, $legal_company_title = null, $system_time = null, $organization_id = null, $conversation_id = null, $sub_merchant_external_id = null
     ) {
+        $this->currency_id = $currency_id;
+        $this->status = $status;
+        $this->tax_number = $tax_number;
+        $this->sub_merchant_key = $sub_merchant_key;
+        $this->locale = $locale;
+        $this->legal_company_title = $legal_company_title;
+        $this->system_time = $system_time;
+        $this->organization_id = $organization_id;
+        $this->conversation_id = $conversation_id;
+        $this->sub_merchant_external_id = $sub_merchant_external_id;
         $this->address = $address;
         $this->city = $city;
         $this->country = $country;

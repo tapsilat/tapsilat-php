@@ -230,6 +230,24 @@ class TapsilatAPI
     }
 
     
+    
+    // --- Aliases for Python SDK Compatibility ---
+    public function relatedUpdate(string $id, array $payload)
+    {
+        return $this->orderRelatedUpdate($id, $payload);
+    }
+
+    public function terminateOrder(string $id)
+    {
+        return $this->orderTerminate($id);
+    }
+
+    public function manualCallback(string $id)
+    {
+        return $this->orderManualCallback($id);
+    }
+
+
     public function getOrderPayments(GetOrderPaymentsRequest $request)
     {
         $endpoint = "/order/payments";
