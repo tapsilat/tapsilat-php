@@ -3,10 +3,14 @@ namespace Tapsilat\Models;
 
 class GetOrderPaymentsRequest
 {
+    public $conversation_id;
+    public $order_reference_id;
     public $order_id;
 
-    public function __construct($order_id)
+    public function __construct($order_id, $conversation_id = null, $order_reference_id = null)
     {
+        $this->conversation_id = $conversation_id;
+        $this->order_reference_id = $order_reference_id;
         $this->order_id = $order_id;
     }
 

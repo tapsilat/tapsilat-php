@@ -3,6 +3,7 @@ namespace Tapsilat\Models;
 
 class OrgUserTokenCreateReq
 {
+    public $invalidate_old_tokens;
     public $email;
     public $expire;
     public $language;
@@ -10,8 +11,9 @@ class OrgUserTokenCreateReq
     public $title;
     public $type;
 
-    public function __construct($email, $expire = null, $language = null, $metadata = null, $title = null, $type = null)
+    public function __construct($email, $expire = null, $language = null, $metadata = null, $title = null, $type = null, $invalidate_old_tokens = null)
     {
+        $this->invalidate_old_tokens = $invalidate_old_tokens;
         $this->email = $email;
         $this->expire = $expire;
         $this->language = $language;

@@ -273,6 +273,32 @@ echo "Status: " . $health['status'];
 echo "Timestamp: " . $health['timestamp'];
 ```
 
+
+### Submerchant Management
+```php
+use Tapsilat\Models\SubmerchantCreateDTO;
+
+$submerchantCreate = new SubmerchantCreateDTO(
+    "Address", "City", "Country", "email@example.com", "5555555555",
+    "TR123", "12345678901", "Name", "Contact", "Surname", "PERSONAL",
+    "Tax Office", "34000"
+);
+$response = $client->createSubmerchant($submerchantCreate);
+
+$submerchants = $client->listSubmerchants();
+```
+
+### Document Export (PDF & Excel)
+```php
+// Returns raw PDF blob
+$pdfData = $client->getOrderPdf("mock-uuid-reference-id");
+// file_put_contents("order.pdf", $pdfData);
+
+// Returns raw Excel blob
+$excelData = $client->getOrderExcel("mock-uuid-reference-id");
+// file_put_contents("order.xlsx", $excelData);
+```
+
 ## System & Webhooks
 
 ### Get System Definitions and Statuses

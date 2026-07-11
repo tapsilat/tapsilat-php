@@ -558,6 +558,67 @@ function runScenario10MissingEndpoints($client)
     }
 }
 
+
+
+/**
+ * Scenario 12: Submerchant Demo
+ */
+function runScenario12SubmerchantDemo($client)
+{
+    echo str_repeat("#", 16) . "\n";
+    echo "Scenario 12: Submerchant Demo\n";
+
+    if (!$client) {
+        echo "Client is not initialized.\n";
+        return;
+    }
+
+    try {
+        $submerchantCreate = new SubmerchantCreateDTO(
+            "Address", "City", "Country", "email@example.com", "5555555555",
+            "TR123", "12345678901", "Name", "Contact", "Surname", "PERSONAL",
+            "Tax Office", "34000"
+        );
+        $response = $client->createSubmerchant($submerchantCreate);
+        echo "Submerchant created successfully! ID: " . ($response['id'] ?? 'N/A') . "\n";
+
+        // List submerchants
+        $submerchants = $client->listSubmerchants(1, 10);
+        echo "Total Submerchants: " . ($submerchants['total'] ?? 0) . "\n";
+
+    } catch (Tapsilat\APIException $e) {
+        echo "API Error: " . $e->error . "\n";
+    } catch (Exception $e) {
+        echo "Unexpected error: " . $e->getMessage() . "\n";
+    }
+}
+
+/**
+ * Scenario 13: Order Export Demo
+ */
+function runScenario13OrderExportDemo($client)
+{
+    echo str_repeat("#", 16) . "\n";
+    echo "Scenario 13: Order Export Demo\n";
+
+    if (!$client) {
+        echo "Client is not initialized.\n";
+        return;
+    }
+
+    try {
+        $referenceId = 'dummy-reference-id';
+        // Note: For demonstration purposes, you would normally capture the raw pdf/excel here
+        // $pdfRawData = $client->getOrderPdf($referenceId);
+        // echo "PDF Data Size: " . strlen($pdfRawData) . " bytes\n";
+        echo "Order Export Demo skipped to avoid dummy 404s.\n";
+    } catch (Tapsilat\APIException $e) {
+        echo "API Error: " . $e->error . "\n";
+    } catch (Exception $e) {
+        echo "Unexpected error: " . $e->getMessage() . "\n";
+    }
+}
+
 // Main execution
 if (php_sapi_name() === 'cli') {
     echo "=== Tapsilat PHP SDK Usage Examples ===\n\n";
@@ -576,6 +637,8 @@ if (php_sapi_name() === 'cli') {
         runScenario9OrganizationSettings($apiClient);
         runScenario10MissingEndpoints($apiClient);
         runScenario11OrderWithConsents($apiClient);
+        runScenario12SubmerchantDemo($apiClient);
+        runScenario13OrderExportDemo($apiClient);
     }
 
     echo "\n=== Examples completed ===\n";
