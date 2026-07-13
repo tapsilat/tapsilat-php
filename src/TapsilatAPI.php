@@ -232,19 +232,19 @@ class TapsilatAPI
     
     
     // --- Aliases for Python SDK Compatibility ---
-    public function relatedUpdate(string $id, array $payload)
+    public function relatedUpdate(string $id, string $relatedReferenceId)
     {
-        return $this->orderRelatedUpdate($id, $payload);
+        return $this->orderRelatedUpdate(new \Tapsilat\Models\OrderRelatedReferenceRequest($id, $relatedReferenceId));
     }
 
     public function terminateOrder(string $id)
     {
-        return $this->orderTerminate($id);
+        return $this->orderTerminate(new \Tapsilat\Models\TerminateRequest($id));
     }
 
     public function manualCallback(string $id)
     {
-        return $this->orderManualCallback($id);
+        return $this->orderManualCallback(new \Tapsilat\Models\OrderManualCallbackRequest($id));
     }
 
 
