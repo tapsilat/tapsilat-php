@@ -1,6 +1,8 @@
 <?php
 namespace Tapsilat;
 
+use Tapsilat\Models\OrderChargeRequest;
+use Tapsilat\Models\CreateOrganizationCurrencyPayload;
 use Tapsilat\Models\OrderCreateRequest;
 use Tapsilat\Models\OrderResponse;
 use Tapsilat\Models\RefundOrderRequest;
@@ -232,19 +234,19 @@ class TapsilatAPI
     
     
     // --- Aliases for Python SDK Compatibility ---
-    public function relatedUpdate(string $id, string $relatedReferenceId)
+    public function relatedUpdate(string $id, array $payload)
     {
-        return $this->orderRelatedUpdate(new \Tapsilat\Models\OrderRelatedReferenceRequest($id, $relatedReferenceId));
+        return $this->orderRelatedUpdate($id, $payload);
     }
 
     public function terminateOrder(string $id)
     {
-        return $this->orderTerminate(new \Tapsilat\Models\TerminateRequest($id));
+        return $this->orderTerminate($id);
     }
 
     public function manualCallback(string $id)
     {
-        return $this->orderManualCallback(new \Tapsilat\Models\OrderManualCallbackRequest($id));
+        return $this->orderManualCallback($id);
     }
 
 
@@ -686,5 +688,46 @@ class TapsilatAPI
     {
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
         return 'sha256=' . $expectedSignature === $signature;
+    }
+
+    public function chargeOrder(OrderChargeRequest $request)
+    {
+        $endpoint = "/order/charge";
+        $payload = $request->toArray();
+        return $this->makeRequest("POST", $endpoint, null, $payload);
+    }
+
+    public function getAllOrdersPayments()
+    {
+        $endpoint = "/orders/payments";
+        return $this->makeRequest("GET", $endpoint);
+    }
+
+    public function createOrganizationCurrency(CreateOrganizationCurrencyPayload $payload)
+    {
+        $endpoint = "/organization/currencies";
+        $payloadArray = $payload->toArray();
+        return $this->makeRequest("POST", $endpoint, null, $payloadArray);
+    }
+
+    public function getOrganizationPartners()
+    {
+        $endpoint = "/organization/partners";
+        return $this->makeRequest("GET", $endpoint);
+    }
+
+    public function getOrganizationLimitsById(string $id, array $params = [])
+    {
+        $endpoint = "/organization/" . $id . "/limits";
+        if (!empty($params)) {
+            $endpoint .= '?' . http_build_query($params);
+        }
+        return $this->makeRequest("GET", $endpoint);
+    }
+
+    public function getSystemConfig()
+    {
+        $endpoint = "/system/config";
+        return $this->makeRequest("GET", $endpoint);
     }
 }

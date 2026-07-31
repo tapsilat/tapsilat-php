@@ -3,6 +3,7 @@ namespace Tapsilat\Models;
 
 class CheckoutDesignDTO
 {
+    public $placeholder_color;
     public $input_background_color;
     public $input_text_color;
     public $label_text_color;
@@ -24,7 +25,8 @@ class CheckoutDesignDTO
         $right_background_color = null,
         $text_color = null,
         $pay_button_color = null,
-        $redirect_url = null
+        $redirect_url = null,
+        $placeholder_color = null
     ) {
         $this->input_background_color = $input_background_color;
         $this->input_text_color = $input_text_color;
@@ -36,6 +38,7 @@ class CheckoutDesignDTO
         $this->text_color = $text_color;
         $this->pay_button_color = $pay_button_color;
         $this->redirect_url = $redirect_url;
+        $this->placeholder_color = $placeholder_color;
     }
 
     public function toArray()
