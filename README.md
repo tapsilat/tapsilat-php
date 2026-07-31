@@ -175,6 +175,19 @@ $referenceId = "mock-uuid-reference-id";
 $client->getOrderTransactions($referenceId);
 ```
 
+### Charge Order
+```php
+use Tapsilat\Models\OrderChargeRequest;
+
+$chargeData = new OrderChargeRequest("mock-uuid-reference-id");
+$client->chargeOrder($chargeData);
+```
+
+### Get All Orders Payments
+```php
+$payments = $client->getAllOrdersPayments();
+```
+
 ### Get Order Term
 ```php
 $termReferenceId = "mock-uuid-term-reference-id";
@@ -266,6 +279,21 @@ $client->orderRelatedUpdate($referenceId, $relatedReferenceId);
 $settings = $client->getOrganizationSettings();
 ```
 
+### Organization Management
+```php
+use Tapsilat\Models\CreateOrganizationCurrencyPayload;
+
+// Create Currency
+$currencyPayload = new CreateOrganizationCurrencyPayload("EUR");
+$client->createOrganizationCurrency($currencyPayload);
+
+// Get Organization Partners
+$partners = $client->getOrganizationPartners();
+
+// Get Organization Limits by ID
+$limits = $client->getOrganizationLimitsById("mock-org-uuid", ["currency" => "TRY"]);
+```
+
 ### Health Monitoring
 ```php
 $health = $client->healthCheck();
@@ -312,6 +340,11 @@ $shortcutTypes = $client->getSystemShortcutTypes();
 $transactionPaymentTypes = $client->getSystemTransactionPaymentTypes();
 $transactionPurposes = $client->getSystemTransactionPurposes();
 $transactionStatuses = $client->getSystemTransactionStatuses();
+```
+
+### Get System Config
+```php
+$config = $client->getSystemConfig();
 ```
 
 ### Webhook Handling
