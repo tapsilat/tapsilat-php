@@ -1,6 +1,10 @@
 <?php
 namespace Tapsilat\Models;
 
+/**
+ * A payment term sent with order creation. due_date is required and, like paid_date,
+ * must be an RFC3339 timestamp such as "2026-01-15T00:00:00Z".
+ */
 class PaymentTermDTO
 {
     public $amount;

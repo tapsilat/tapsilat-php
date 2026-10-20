@@ -3,6 +3,7 @@ namespace Tapsilat\Models;
 
 class OrderPaymentTermCreateRequest
 {
+    /** The order's ID (from order creation), not its reference ID. */
     public $order_id;
     public $term_reference_id;
     public $amount;

@@ -13,16 +13,20 @@ class OrderChargeRequest
      * @var string
      */
     public $order_reference_id;
+    public $retry;
 
-    public function __construct($order_reference_id)
+    public function __construct($order_reference_id, $retry = null)
     {
+        $this->retry = $retry;
         $this->order_reference_id = $order_reference_id;
     }
 
     public function toArray()
     {
-        return [
-            'order_reference_id' => $this->order_reference_id
-        ];
+        $result = ['order_reference_id' => $this->order_reference_id];
+        if ($this->retry !== null) {
+            $result['retry'] = $this->retry;
+        }
+        return $result;
     }
 }
