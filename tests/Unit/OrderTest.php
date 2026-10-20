@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -25,36 +26,152 @@ use Tapsilat\Models\RefundOrderRequest;
 use Tapsilat\Models\ShippingAddressDTO;
 use Tapsilat\Models\SubmerchantDTO;
 use Tapsilat\Models\SubOrganizationDTO;
-
 use Tapsilat\Models\GetOrderPaymentsRequest;
 use Tapsilat\Models\OrderOIPDTO;
 
-
 class OrderTest extends TestCase
 {
-
     public function testOrderToArrayFull()
     {
-        $buyer = new BuyerDTO("John", "Doe", "1990-01-01", "Istanbul", "TR", "test@example.com", "+905551234567", "b-1", "11111111111", "127.0.0.1", "2025-01-01", "2025-01-01", "Mr.", "34000", "Reg Address");
+        $buyer = new BuyerDTO(
+            "John",
+            "Doe",
+            "1990-01-01",
+            "Istanbul",
+            "TR",
+            "test@example.com",
+            "+905551234567",
+            "b-1",
+            "11111111111",
+            "127.0.0.1",
+            "2025-01-01",
+            "2025-01-01",
+            "Mr.",
+            "34000",
+            "Reg Address"
+        );
         $payer = new BasketItemPayerDTO("Payer Addr", "payer-ref", "TaxOfc", "Payer Title", "PERSONAL", "VAT123");
-        $item = new BasketItemDTO("Cat1", "Cat2", "C-10", 10.0, "data", "itm-1", "PHYSICAL", "Laptop", 90.0, 100.0, 2.5, "1234", $payer, 1, 1.0, "pcs", "sub-key", "85.0");
-        $billing = new BillingAddressDTO("Bill Addr", "PERSONAL", "TR", "Istanbul", "Contact", "+905550001122", "TR", "District", "TaxOfc", "Title", "VAT000", "34000", "Neighbour", "Str1", "Str2", "Str3");
-        $design = new CheckoutDesignDTO("#FFF", "#000", "#111", "#222", "logo.png", "<html></html>", "#333", "#444", "#555", "http://redir");
+        $item = new BasketItemDTO(
+            "Cat1",
+            "Cat2",
+            "C-10",
+            10.0,
+            "data",
+            "itm-1",
+            "PHYSICAL",
+            "Laptop",
+            90.0,
+            100.0,
+            2.5,
+            "1234",
+            $payer,
+            1,
+            1.0,
+            "pcs",
+            "sub-key",
+            "85.0"
+        );
+        $billing = new BillingAddressDTO(
+            "Bill Addr",
+            "PERSONAL",
+            "TR",
+            "Istanbul",
+            "Contact",
+            "+905550001122",
+            "TR",
+            "District",
+            "TaxOfc",
+            "Title",
+            "VAT000",
+            "34000",
+            "Neighbour",
+            "Str1",
+            "Str2",
+            "Str3"
+        );
+        $design = new CheckoutDesignDTO(
+            "#FFF",
+            "#000",
+            "#111",
+            "#222",
+            "logo.png",
+            "<html></html>",
+            "#333",
+            "#444",
+            "#555",
+            "http://redir"
+        );
         $consent = new \Tapsilat\Models\OrderConsentDTO("Consent Title", "http://consent");
         $metadata = new MetadataDTO("Key1", "Val1");
         $card = new OrderCardDTO("card-1", 1);
         $term = new PaymentTermDTO(50.0, "data-term", "2025-10-10", "2025-10-10", true, "PENDING", "term-ref", 1);
-        $pfSub = new OrderPFSubMerchantDTO("1234", "PF Name", "org-1", "PF Addr", "City", "TR", "TRY", "pf-1", "NAT1", "34000", "NIN1", "http://sub", "SW", "TM");
+        $pfSub = new OrderPFSubMerchantDTO(
+            "1234",
+            "PF Name",
+            "org-1",
+            "PF Addr",
+            "City",
+            "TR",
+            "TRY",
+            "pf-1",
+            "NAT1",
+            "34000",
+            "NIN1",
+            "http://sub",
+            "SW",
+            "TM"
+        );
         $shipping = new ShippingAddressDTO("Ship Addr", "City", "Contact Name", "TR", "2025-10-10", "TRK-1", "34000");
-        $subOrg = new SubOrganizationDTO("ACQ", "Sub Addr", "First", "Last", "TRY", "sub@sub.com", "+905550001133", "TR00", "1111", "Legal Title", "Org Name", "ext-id", "sm-key", "sm-type", "tax-num", "tax-ofc");
+        $subOrg = new SubOrganizationDTO(
+            "ACQ",
+            "Sub Addr",
+            "First",
+            "Last",
+            "TRY",
+            "sub@sub.com",
+            "+905550001133",
+            "TR00",
+            "1111",
+            "Legal Title",
+            "Org Name",
+            "ext-id",
+            "sm-key",
+            "sm-type",
+            "tax-num",
+            "tax-ofc"
+        );
         $subMerch = new SubmerchantDTO(40.0, "m-ref", "itm-1");
 
         $order = new OrderCreateRequest(
-            150.0, "TRY", "tr", $buyer, [$item], $billing, $design, [$consent],
-            "conv-id", [3, 6], "ext-ref", [$metadata], [$card],
-            150.0, false, "http://fail", true, "auth", ["credit_card"],
-            "http://success", [$term], $pfSub, "http://redir-fail", "http://redir-success",
-            $shipping, $subOrg, [$subMerch], 15.0, true
+            150.0,
+            "TRY",
+            "tr",
+            $buyer,
+            [$item],
+            $billing,
+            $design,
+            [$consent],
+            "conv-id",
+            [3, 6],
+            "ext-ref",
+            [$metadata],
+            [$card],
+            150.0,
+            false,
+            "http://fail",
+            true,
+            "auth",
+            ["credit_card"],
+            "http://success",
+            [$term],
+            $pfSub,
+            "http://redir-fail",
+            "http://redir-success",
+            $shipping,
+            $subOrg,
+            [$subMerch],
+            15.0,
+            true
         );
 
         $jsonData = $order->toArray();
@@ -153,7 +270,17 @@ class OrderTest extends TestCase
 
     public function testCheckoutDesignDTOToArray()
     {
-        $design = new CheckoutDesignDTO(null, null, null, null, "http://example.com/logo.png", null, null, null, "#FF0000");
+        $design = new CheckoutDesignDTO(
+            null,
+            null,
+            null,
+            null,
+            "http://example.com/logo.png",
+            null,
+            null,
+            null,
+            "#FF0000"
+        );
         $designArray = $design->toArray();
         $this->assertEquals("#FF0000", $designArray["pay_button_color"]);
         $this->assertEquals("http://example.com/logo.png", $designArray["logo"]);
@@ -961,7 +1088,9 @@ class OrderTest extends TestCase
             ->with('DELETE', '/order/term', null, $expectedPayload)
             ->willReturn($expectedResponse);
 
-        $result = $apiMock->deleteOrderTerm(new \Tapsilat\Models\OrderPaymentTermDeleteRequest($orderId, $termReferenceId));
+        $result = $apiMock->deleteOrderTerm(
+            new \Tapsilat\Models\OrderPaymentTermDeleteRequest($orderId, $termReferenceId)
+        );
 
         $this->assertEquals($expectedResponse, $result);
     }
@@ -1363,7 +1492,10 @@ class OrderTest extends TestCase
         $expectedResponse = ['payments' => []];
 
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
-        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/payments', null, $request->toArray())->willReturn($expectedResponse);
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/payments', null, $request->toArray())
+            ->willReturn($expectedResponse);
 
         $result = $apiMock->getOrderPayments($request);
         $this->assertEquals($expectedResponse, $result);
@@ -1375,7 +1507,10 @@ class OrderTest extends TestCase
         $expectedResponse = "raw-pdf-data";
 
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
-        $apiMock->expects($this->once())->method('makeRequest')->with('GET', "/order/{$id}/export/pdf", null, null, true)->willReturn($expectedResponse);
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$id}/export/pdf", null, null, true)
+            ->willReturn($expectedResponse);
 
         $result = $apiMock->getOrderPdf($id);
         $this->assertEquals($expectedResponse, $result);
@@ -1387,7 +1522,10 @@ class OrderTest extends TestCase
         $expectedResponse = "raw-excel-data";
 
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
-        $apiMock->expects($this->once())->method('makeRequest')->with('GET', "/order/{$id}/export/excel", null, null, true)->willReturn($expectedResponse);
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('GET', "/order/{$id}/export/excel", null, null, true)
+            ->willReturn($expectedResponse);
 
         $result = $apiMock->getOrderExcel($id);
         $this->assertEquals($expectedResponse, $result);
@@ -1399,7 +1537,10 @@ class OrderTest extends TestCase
         $expectedResponse = ['refund_id' => '123'];
 
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
-        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/refund-request', null, $request->toArray())->willReturn($expectedResponse);
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/refund-request', null, $request->toArray())
+            ->willReturn($expectedResponse);
 
         $result = $apiMock->createOrderRefundRequest($request);
         $this->assertEquals($expectedResponse, $result);
@@ -1411,7 +1552,10 @@ class OrderTest extends TestCase
         $expectedResponse = ['success' => true];
 
         $apiMock = $this->getMockBuilder(TapsilatAPI::class)->onlyMethods(['makeRequest'])->getMock();
-        $apiMock->expects($this->once())->method('makeRequest')->with('POST', '/order/oip', null, $request->toArray())->willReturn($expectedResponse);
+        $apiMock->expects($this->once())
+            ->method('makeRequest')
+            ->with('POST', '/order/oip', null, $request->toArray())
+            ->willReturn($expectedResponse);
 
         $result = $apiMock->addOrderOip($request);
         $this->assertEquals($expectedResponse, $result);

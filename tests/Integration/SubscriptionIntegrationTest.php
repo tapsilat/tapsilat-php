@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;

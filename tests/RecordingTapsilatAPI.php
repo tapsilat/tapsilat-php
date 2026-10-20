@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests;
 
 use Tapsilat\TapsilatAPI;
@@ -44,6 +45,8 @@ class RecordingTapsilatAPI extends TapsilatAPI
         ];
         $this->requests[] = $request;
         $key = $method . ' ' . $parts['path'];
-        return isset($this->responses[$key]) ? $this->responses[$key] : [501, 'application/json', '{"error":"no stub"}'];
+        return isset($this->responses[$key])
+            ? $this->responses[$key]
+            : [501, 'application/json', '{"error":"no stub"}'];
     }
 }

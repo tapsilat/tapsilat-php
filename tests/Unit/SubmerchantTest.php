@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -11,9 +12,19 @@ class SubmerchantTest extends TestCase
     public function testCreateSubmerchant()
     {
         $request = new SubmerchantCreateDTO(
-            "Address", "City", "Country", "email@example.com", "5555555555",
-            "TR123", "12345678901", "Name", "Contact", "Surname", "PERSONAL",
-            "Tax Office", "34000"
+            "Address",
+            "City",
+            "Country",
+            "email@example.com",
+            "5555555555",
+            "TR123",
+            "12345678901",
+            "Name",
+            "Contact",
+            "Surname",
+            "PERSONAL",
+            "Tax Office",
+            "34000"
         );
         $expectedResponse = ['id' => 'sub-123'];
 

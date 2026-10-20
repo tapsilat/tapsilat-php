@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -49,7 +50,11 @@ PHP
 
         self::$port = random_int(20000, 40000);
         $command = [PHP_BINARY, '-S', '127.0.0.1:' . self::$port, self::$dir . '/router.php'];
-        self::$process = proc_open($command, [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes);
+        self::$process = proc_open(
+            $command,
+            [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            $pipes
+        );
 
         for ($i = 0; $i < 50; $i++) {
             $socket = @fsockopen('127.0.0.1', self::$port);
@@ -135,7 +140,10 @@ PHP
         $api->getOrderStatus('ref-1');
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('GET http://127.0.0.1:' . self::$port . '/api/v1/order/ref-1/status', $output);
+        $this->assertStringContainsString(
+            'GET http://127.0.0.1:' . self::$port . '/api/v1/order/ref-1/status',
+            $output
+        );
         $this->assertStringNotContainsString('test-key', $output);
     }
 }

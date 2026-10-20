@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -87,7 +88,12 @@ class PanelParityTest extends TestCase
 
     public function testGrpcErrorsUseTheErrorField()
     {
-        $this->api->on('GET', '/api/v2/submerchant-payouts/missing', 424, '{"error":"payout is not eligible","code":9}');
+        $this->api->on(
+            'GET',
+            '/api/v2/submerchant-payouts/missing',
+            424,
+            '{"error":"payout is not eligible","code":9}'
+        );
 
         try {
             $this->api->getMarketplacePayout('missing');
@@ -101,7 +107,13 @@ class PanelParityTest extends TestCase
 
     public function testAnHtmlPageIsReportedAsAnApiError()
     {
-        $this->api->on('GET', '/api/v1/order/ref-1/status', 200, '<!doctype html><html></html>', 'text/html; charset=utf-8');
+        $this->api->on(
+            'GET',
+            '/api/v1/order/ref-1/status',
+            200,
+            '<!doctype html><html></html>',
+            'text/html; charset=utf-8'
+        );
 
         try {
             $this->api->getOrderStatus('ref-1');
@@ -128,12 +140,20 @@ class PanelParityTest extends TestCase
 
         $this->api->getOrderPaymentDetailsByConversationId('conv-1');
 
-        $this->assertSame(['conversation_id' => 'conv-1'], $this->api->last('POST', '/api/v1/order/payment-details')['json']);
+        $this->assertSame(
+            ['conversation_id' => 'conv-1'],
+            $this->api->last('POST', '/api/v1/order/payment-details')['json']
+        );
     }
 
     public function testCardInstallmentsAndInstallmentTable()
     {
-        $this->api->on('GET', '/api/v1/card/installments', 200, '{"is_installment_available":true,"installments":[{"installment":3}]}');
+        $this->api->on(
+            'GET',
+            '/api/v1/card/installments',
+            200,
+            '{"is_installment_available":true,"installments":[{"installment":3}]}'
+        );
         $this->api->on('GET', '/api/v1/card/installment-table', 200, '{"groups":[{"bank":"Bank","rows":[]}]}');
 
         $options = $this->api->getCardInstallments(new CardInstallmentsRequest([
@@ -143,8 +163,14 @@ class PanelParityTest extends TestCase
 
         $this->assertTrue($options['is_installment_available']);
         $this->assertSame('Bank', $table['groups'][0]['bank']);
-        $this->assertSame('bin=54066200&amount=100.5&currency=TRY&is_three_d=true', $this->api->last('GET', '/api/v1/card/installments')['query']);
-        $this->assertSame('amount=100&currency=TRY', $this->api->last('GET', '/api/v1/card/installment-table')['query']);
+        $this->assertSame(
+            'bin=54066200&amount=100.5&currency=TRY&is_three_d=true',
+            $this->api->last('GET', '/api/v1/card/installments')['query']
+        );
+        $this->assertSame(
+            'amount=100&currency=TRY',
+            $this->api->last('GET', '/api/v1/card/installment-table')['query']
+        );
     }
 
     public function testSubmerchantSettlementRoutes()
@@ -162,11 +188,17 @@ class PanelParityTest extends TestCase
             'sub_merchant_key' => 'key-1', 'sub_merchant_price' => '10.50', 'acquirer' => 'acq',
         ]));
         $event = $this->api->recordSubmerchantPayoutEvent(new SubmerchantPayoutEventRequest([
-            'idempotency_key' => 'k-1', 'order_reference' => 'ref-1', 'item_id' => 'item-1', 'event_type' => 'DELIVERED',
+            'idempotency_key' => 'k-1',
+            'order_reference' => 'ref-1',
+            'item_id' => 'item-1',
+            'event_type' => 'DELIVERED',
         ]));
 
         $this->assertSame($action->toArray(), $this->api->last('POST', '/api/v1/submerchants/payment/approve')['json']);
-        $this->assertSame('10.50', $this->api->last('PUT', '/api/v1/submerchants/payment/item')['json']['sub_merchant_price']);
+        $this->assertSame(
+            '10.50',
+            $this->api->last('PUT', '/api/v1/submerchants/payment/item')['json']['sub_merchant_price']
+        );
         $this->assertSame('ev-1', $event['id']);
     }
 
@@ -187,7 +219,10 @@ class PanelParityTest extends TestCase
         $this->assertTrue($body['failover']);
         $this->assertFalse($body['tls']);
         $this->assertTrue($body['main_installment']);
-        $this->assertSame('page=1&per_page=10&suborganization_id=sub-1', $this->api->last('GET', '/api/v1/vpos')['query']);
+        $this->assertSame(
+            'page=1&per_page=10&suborganization_id=sub-1',
+            $this->api->last('GET', '/api/v1/vpos')['query']
+        );
     }
 
     public function testSavedCardRoutes()
@@ -225,7 +260,9 @@ class PanelParityTest extends TestCase
             'currency_id' => 'TRY', 'seller_type' => 'PERSONAL', 'vpos_ids' => ['v-1', 'v-2'],
         ]));
         $accepted = $this->api->approveMarketplacePayouts(new MarketplacePayoutApproval(['ids' => ['p-1', 'p-2']]));
-        $this->api->listMarketplacePayouts(new MarketplacePayoutFilter(['currency' => 'TRY', 'page' => 1, 'per_page' => 20]));
+        $this->api->listMarketplacePayouts(
+            new MarketplacePayoutFilter(['currency' => 'TRY', 'page' => 1, 'per_page' => 20])
+        );
         $deleted = $this->api->deleteMarketplaceReleasePolicy('rel-1');
 
         $this->assertSame($revision, $this->api->last('PATCH', '/api/v2/submerchants/s-1')['json']['revision']);
@@ -233,27 +270,49 @@ class PanelParityTest extends TestCase
             'currency_id=TRY&seller_type=PERSONAL&operation=create&vpos_id=v-1&vpos_id=v-2',
             $this->api->last('GET', '/api/v2/marketplace/seller-contracts')['query']
         );
-        $this->assertSame(['ids' => ['p-1', 'p-2']], $this->api->last('POST', '/api/v2/submerchant-payouts/approve')['json']);
+        $this->assertSame(
+            ['ids' => ['p-1', 'p-2']],
+            $this->api->last('POST', '/api/v2/submerchant-payouts/approve')['json']
+        );
         $this->assertSame('accepted', $accepted['status']);
-        $this->assertSame('currency=TRY&page=1&per_page=20', $this->api->last('GET', '/api/v2/submerchant-payouts')['query']);
+        $this->assertSame(
+            'currency=TRY&page=1&per_page=20',
+            $this->api->last('GET', '/api/v2/submerchant-payouts')['query']
+        );
         $this->assertSame([], $deleted);
     }
 
     public function testApprovalPolicyCurrencyUnitsAreResolvedToUuids()
     {
         $uuid = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
-        $this->api->on('GET', '/api/v1/organization/currencies', 200, '{"currencies":[{"id":"' . $uuid . '","currency_unit":"TRY"}]}');
+        $this->api->on(
+            'GET',
+            '/api/v1/organization/currencies',
+            200,
+            '{"currencies":[{"id":"' . $uuid . '","currency_unit":"TRY"}]}'
+        );
         $this->api->on('POST', '/api/v2/marketplace/approval-policies', 201, '{"id":"pol-1"}');
         $this->api->on('PATCH', '/api/v2/marketplace/approval-policies/pol-1', 200, '{}');
 
         $input = new MarketplaceApprovalPolicyInput([
-            'name' => 'Large', 'priority' => 1, 'enabled' => true, 'min_amount' => '1000', 'currency_id' => 'try', 'mode' => 'manual',
+            'name' => 'Large',
+            'priority' => 1,
+            'enabled' => true,
+            'min_amount' => '1000',
+            'currency_id' => 'try',
+            'mode' => 'manual',
         ]);
         $this->api->createMarketplaceApprovalPolicy($input);
         $this->api->updateMarketplaceApprovalPolicy('pol-1', $input);
 
-        $this->assertSame($uuid, $this->api->last('POST', '/api/v2/marketplace/approval-policies')['json']['currency_id']);
-        $this->assertSame($uuid, $this->api->last('PATCH', '/api/v2/marketplace/approval-policies/pol-1')['json']['currency_id']);
+        $this->assertSame(
+            $uuid,
+            $this->api->last('POST', '/api/v2/marketplace/approval-policies')['json']['currency_id']
+        );
+        $this->assertSame(
+            $uuid,
+            $this->api->last('PATCH', '/api/v2/marketplace/approval-policies/pol-1')['json']['currency_id']
+        );
         $lookups = array_filter($this->api->requests, function ($r) {
             return $r['path'] === '/api/v1/organization/currencies';
         });
@@ -282,9 +341,15 @@ class PanelParityTest extends TestCase
         $this->api->terminateOrder('ref-1');
         $this->api->manualCallback('ref-1', 'conv-1');
 
-        $this->assertSame(['reference_id' => 'ref-1', 'related_reference_id' => 'ref-0'], $this->api->last('PATCH', '/api/v1/order/releated')['json']);
+        $this->assertSame(
+            ['reference_id' => 'ref-1', 'related_reference_id' => 'ref-0'],
+            $this->api->last('PATCH', '/api/v1/order/releated')['json']
+        );
         $this->assertSame(['reference_id' => 'ref-1'], $this->api->last('POST', '/api/v1/order/terminate')['json']);
-        $this->assertSame(['reference_id' => 'ref-1', 'conversation_id' => 'conv-1'], $this->api->last('POST', '/api/v1/order/callback')['json']);
+        $this->assertSame(
+            ['reference_id' => 'ref-1', 'conversation_id' => 'conv-1'],
+            $this->api->last('POST', '/api/v1/order/callback')['json']
+        );
     }
 
     public function testCreateOrderAcceptsAnInstallmentListAndBrandingFields()
@@ -295,7 +360,18 @@ class PanelParityTest extends TestCase
         $design->accent_color = '#123456';
         $design->dark_mode_enabled = true;
         $design->dark_colors = ['text_color' => '#ffffff'];
-        $order = new OrderCreateRequest(100, 'TRY', 'tr', new BuyerDTO('John', 'Doe'), null, null, $design, null, 'conv-1', [3, 6]);
+        $order = new OrderCreateRequest(
+            100,
+            'TRY',
+            'tr',
+            new BuyerDTO('John', 'Doe'),
+            null,
+            null,
+            $design,
+            null,
+            'conv-1',
+            [3, 6]
+        );
         $order->order_vpos_id = 'vpos-1';
 
         $response = $this->api->createOrder($order);
@@ -312,9 +388,14 @@ class PanelParityTest extends TestCase
     {
         $this->api->on('POST', '/api/v1/organization/user/token', 200, '{"token":"tok"}');
 
-        $this->api->createOrganizationUserToken(new OrgUserTokenCreateReq(null, 60, null, null, null, null, null, 'u-1'));
+        $this->api->createOrganizationUserToken(
+            new OrgUserTokenCreateReq(null, 60, null, null, null, null, null, 'u-1')
+        );
 
-        $this->assertSame(['expire' => 60, 'user_id' => 'u-1'], $this->api->last('POST', '/api/v1/organization/user/token')['json']);
+        $this->assertSame(
+            ['expire' => 60, 'user_id' => 'u-1'],
+            $this->api->last('POST', '/api/v1/organization/user/token')['json']
+        );
     }
 
     public function testWebhookSignaturesAreAcceptedWithOrWithoutThePrefix()
@@ -337,7 +418,10 @@ class PanelParityTest extends TestCase
     public function testVersionedBaseUrl()
     {
         $this->assertSame('https://panel.example/api/v2', $this->api->versionedBaseUrl('v2'));
-        $this->assertSame('https://panel.example/api/v2', (new TapsilatAPI('k', 10, 'https://panel.example/'))->versionedBaseUrl('v2'));
+        $this->assertSame(
+            'https://panel.example/api/v2',
+            (new TapsilatAPI('k', 10, 'https://panel.example/'))->versionedBaseUrl('v2')
+        );
     }
 
     public function testOrderResponseSerializesToJson()
