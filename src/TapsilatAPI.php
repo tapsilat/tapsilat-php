@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat;
 
 use Tapsilat\Models\OrderChargeRequest;
@@ -45,7 +46,6 @@ use Tapsilat\Models\SubmerchantCreateDTO;
 use Tapsilat\Models\SubmerchantUpdateDTO;
 use Tapsilat\Models\OrgUserTokenCreateReq;
 use Tapsilat\Models\OrderListFilter;
-
 
 class TapsilatAPI
 {
@@ -239,7 +239,9 @@ class TapsilatAPI
         if ($this->currencyIdsByUnit === null) {
             $response = $this->getOrganizationCurrencies();
             $map = [];
-            $currencies = isset($response['currencies']) && is_array($response['currencies']) ? $response['currencies'] : [];
+            $currencies = isset($response['currencies']) && is_array($response['currencies'])
+                ? $response['currencies']
+                : [];
             foreach ($currencies as $currency) {
                 if (!empty($currency['currency_unit']) && !empty($currency['id'])) {
                     $map[strtoupper(trim($currency['currency_unit']))] = $currency['id'];
@@ -276,7 +278,7 @@ class TapsilatAPI
 
         $payload = $order->toArray();
         $response = $this->makeRequest('POST', $endpoint, null, $payload);
-        
+
         return new OrderResponse($response);
     }
 
@@ -362,8 +364,8 @@ class TapsilatAPI
         return new OrderResponse($response);
     }
 
-    
-    
+
+
     // --- Aliases for Python SDK Compatibility ---
     /**
      * Links an order to a related reference ID; $payload holds related_reference_id.
@@ -418,8 +420,14 @@ class TapsilatAPI
         return $this->makeRequest("POST", $endpoint, null, $payload);
     }
 
-    public function getOrderList($page = 1, $perPage = 10, $startDate = '', $endDate = '', $organizationId = '', $relatedReferenceId = '')
-    {
+    public function getOrderList(
+        $page = 1,
+        $perPage = 10,
+        $startDate = '',
+        $endDate = '',
+        $organizationId = '',
+        $relatedReferenceId = ''
+    ) {
         $endpoint = '/order/list';
         $params = array_filter([
             'page' => $page,
@@ -734,7 +742,7 @@ class TapsilatAPI
         return $this->makeRequest('GET', $endpoint);
     }
 
-    
+
     public function createOrganizationUserToken(OrgUserTokenCreateReq $request)
     {
         $endpoint = "/organization/user/token";
@@ -763,7 +771,7 @@ class TapsilatAPI
         return $this->makeRequest('POST', $endpoint, null, $payload);
     }
 
-    
+
     public function createSubmerchant(SubmerchantCreateDTO $request)
     {
         $endpoint = "/submerchants";

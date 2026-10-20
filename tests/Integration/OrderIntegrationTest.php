@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
@@ -93,7 +94,7 @@ class OrderIntegrationTest extends TestCase
             $this->api->orderCallback($id);
             $this->assertTrue(true);
         } catch (\Tapsilat\APIException $e) {
-            $this->assertTrue(true); 
+            $this->assertTrue(true);
         }
     }
 

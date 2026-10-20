@@ -1,4 +1,5 @@
 <?php
+
 namespace Tapsilat\Models;
 
 class BasketItemDTO
@@ -47,7 +48,12 @@ class BasketItemDTO
         $quantity_float = null,
         $quantity_unit = null,
         $sub_merchant_key = null,
-        $sub_merchant_price = null, $status = null, $item_payments = null, $paidable_amount = null, $refunded_amount = null, $refundable_amount = null,
+        $sub_merchant_price = null,
+        $status = null,
+        $item_payments = null,
+        $paidable_amount = null,
+        $refunded_amount = null,
+        $refundable_amount = null,
         $payout_release_at = null
     ) {
         $this->payout_release_at = $payout_release_at;
