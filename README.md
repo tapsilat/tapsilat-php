@@ -180,12 +180,20 @@ $client->getOrderTransactions($referenceId);
 use Tapsilat\Models\OrderChargeRequest;
 
 $chargeData = new OrderChargeRequest("mock-uuid-reference-id");
-$client->chargeOrder($chargeData);
+$result = $client->chargeOrder($chargeData);
+if (empty($result['isSuccess'])) {
+    // The request can succeed while the charge fails; the charge response keys are camelCase
+    echo $result['errorCode'] . ': ' . $result['message'];
+}
 ```
 
-### Get All Orders Payments
+### Get Order Payments
+`getAllOrdersPayments()` is deprecated: the API has no route for it. List one order's payments instead:
 ```php
-$payments = $client->getAllOrdersPayments();
+use Tapsilat\Models\GetOrderPaymentsRequest;
+
+// Arguments: order ID, conversation ID, order reference ID; set one of them
+$payments = $client->getOrderPayments(new GetOrderPaymentsRequest(null, null, "mock-uuid-reference-id"));
 ```
 
 ### Get Order Term
@@ -195,6 +203,7 @@ $client->getOrderTerm($termReferenceId);
 ```
 
 ### Create Order Term
+`order_id` is the order's ID (from order creation), not its reference ID. Term dates use `YYYY-MM-DD`.
 ```php
 use Tapsilat\Models\OrderPaymentTermCreateRequest;
 
@@ -204,7 +213,7 @@ $terms = [
         $orderId,
         "TERM-123000456",
         5000,
-        "2025-10-10 00:00",
+        "2025-10-10",
         1,
         true,
         "PENDING"
@@ -213,7 +222,7 @@ $terms = [
         $orderId,
         "TERM-123000457",
         5000,
-        "2025-11-10 00:00",
+        "2025-11-10",
         2,
         true,
         "PENDING"
@@ -227,19 +236,20 @@ foreach ($terms as $term) {
 
 ### Delete Order Term
 ```php
-$orderId = "mock-uuid-order-id";
-$termReferenceId = "TERM-123000456";
-$client->deleteOrderTerm($orderId, $termReferenceId);
+use Tapsilat\Models\OrderPaymentTermDeleteRequest;
+
+$client->deleteOrderTerm(new OrderPaymentTermDeleteRequest("mock-uuid-order-id", "TERM-123000456"));
 ```
 
 ### Update Order Term
+An update replaces the term, so send every field.
 ```php
 use Tapsilat\Models\OrderPaymentTermUpdateRequest;
 
 $term = new OrderPaymentTermUpdateRequest(
     "TERM-123000457",
     null, // amount
-    "2025-12-10 00:00", // due_date
+    "2025-12-10", // due_date
     null, // paid_date
     true  // required
 );
@@ -250,28 +260,28 @@ $client->updateOrderTerm($term);
 ```php
 use Tapsilat\Models\OrderTermRefundRequest;
 
-$term = new OrderTermRefundRequest("term-id", 100);
+// term_id is the term's ID; the order's reference ID is required
+$term = new OrderTermRefundRequest("term-id", 100, "mock-uuid-reference-id");
 $client->refundOrderTerm($term);
 ```
 
-### Terminate Order Term
+### Terminate Order
 ```php
-$referenceId = "mock-uuid-reference-id";
-$client->orderTerminate($referenceId);
+$client->terminateOrder("mock-uuid-reference-id");
 ```
 
 ### Manual Callback for Order
 ```php
 $referenceId = "mock-uuid-reference-id";
 $conversationId = "mock-uuid-conversation-id";
-$client->orderManualCallback($referenceId, $conversationId);
+$client->manualCallback($referenceId, $conversationId);
 ```
 
 ### Order Related Reference Update
 ```php
 $referenceId = "mock-uuid-reference-id";
 $relatedReferenceId = "mock-uuid-related-reference-id";
-$client->orderRelatedUpdate($referenceId, $relatedReferenceId);
+$client->relatedUpdate($referenceId, ["related_reference_id" => $relatedReferenceId]);
 ```
 
 ### Get Organization Settings
@@ -292,13 +302,17 @@ $partners = $client->getOrganizationPartners();
 
 // Get Organization Limits by ID
 $limits = $client->getOrganizationLimitsById("mock-org-uuid", ["currency" => "TRY"]);
+
+// Most endpoints accept currency units directly; resolve one to its UUID where a UUID is required
+$currencyId = $client->resolveCurrencyId("TRY");
 ```
+
+`getOrganizationLimits()`, `getOrganizationLimitUser()` and `setOrganizationLimitUser()` are deprecated: the API has no such routes.
 
 ### Health Monitoring
 ```php
 $health = $client->healthCheck();
-echo "Status: " . $health['status'];
-echo "Timestamp: " . $health['timestamp'];
+echo "Status: " . $health['status']; // "OK"
 ```
 
 
@@ -327,6 +341,106 @@ $excelData = $client->getOrderExcel("mock-uuid-reference-id");
 // file_put_contents("order.xlsx", $excelData);
 ```
 
+### Card Installments
+```php
+use Tapsilat\Models\CardInstallmentsRequest;
+use Tapsilat\Models\InstallmentTableRequest;
+
+$options = $client->getCardInstallments(new CardInstallmentsRequest([
+    'bin' => '54066200', 'amount' => 1000, 'currency' => 'TRY', 'is_three_d' => true,
+]));
+$table = $client->getInstallmentTable(new InstallmentTableRequest(['amount' => 1000, 'currency' => 'TRY']));
+```
+
+### Submerchant Settlement and Payout Events
+```php
+use Tapsilat\Models\SubmerchantPaymentAction;
+use Tapsilat\Models\SubmerchantPaymentItemUpdate;
+use Tapsilat\Models\SubmerchantPayoutEventRequest;
+
+$action = new SubmerchantPaymentAction([
+    'locale' => 'tr', 'conversation_id' => 'conv-1', 'payment_transaction_id' => 'tx-1', 'acquirer' => 'acquirer',
+]);
+$client->approveSubmerchantPayment($action);
+$client->disapproveSubmerchantPayment($action);
+
+$client->updateSubmerchantPaymentItem(new SubmerchantPaymentItemUpdate([
+    'locale' => 'tr', 'conversation_id' => 'conv-1', 'payment_transaction_id' => 'tx-1',
+    'sub_merchant_key' => 'key-1', 'sub_merchant_price' => '60.25', 'acquirer' => 'acquirer',
+]));
+
+$client->recordSubmerchantPayoutEvent(new SubmerchantPayoutEventRequest([
+    'idempotency_key' => 'event-1', 'order_reference' => 'reference-id', 'item_id' => 'item-1', 'event_type' => 'DELIVERED',
+]));
+```
+
+### Virtual POS
+A VPOS update replaces the whole configuration (fields left out are stored as empty or false), so read it first
+and send every field back.
+```php
+use Tapsilat\Models\VposUpdateRequest;
+
+$vpos = $client->getVpos('vpos-id');
+$fields = array_intersect_key($vpos, get_class_vars(VposUpdateRequest::class));
+$client->updateVpos('vpos-id', new VposUpdateRequest(array_merge($fields, ['failover' => true])));
+
+$list = $client->listVpos(1, 10);
+$acquirers = $client->listVposAcquirers();
+$submerchants = $client->listVposSubmerchants(1, 10, 'vpos-id');
+```
+
+### Saved Cards
+```php
+use Tapsilat\Models\CardTokenizeRequest;
+
+$result = $client->tokenizeCard(new CardTokenizeRequest([
+    'card_number' => '4111111111111111', 'holder_name' => 'John Doe',
+    'expiry_month' => '12', 'expiry_year' => '30', 'cvv' => '123',
+]));
+$cards = $client->listSavedCards(1, 10);
+$client->deleteSavedCard('card-id');
+```
+
+### Marketplace (API v2)
+Marketplace calls use the `/api/v2` URL derived from the base URL. Seller and payout revisions are opaque strings:
+send them back exactly as received.
+```php
+use Tapsilat\Models\MarketplaceApprovalPolicyInput;
+use Tapsilat\Models\MarketplacePayoutApproval;
+use Tapsilat\Models\MarketplacePayoutFilter;
+use Tapsilat\Models\MarketplaceProfileUpdate;
+
+$seller = $client->getMarketplaceSubmerchant('seller-id');
+$client->updateMarketplaceSubmerchant('seller-id', new MarketplaceProfileUpdate([
+    'name' => 'New name', 'revision' => $seller['revision'],
+]));
+
+$payouts = $client->listMarketplacePayouts(new MarketplacePayoutFilter(['status' => 'WAITING_APPROVAL', 'page' => 1]));
+$client->approveMarketplacePayouts(new MarketplacePayoutApproval([
+    'ids' => array_column($payouts['rows'], 'id'),
+]));
+
+// The approval policy currency must be a UUID; a unit such as "TRY" is resolved for you
+$client->createMarketplaceApprovalPolicy(new MarketplaceApprovalPolicyInput([
+    'name' => 'Large orders', 'priority' => 1, 'min_amount' => '1000', 'currency_id' => 'TRY', 'mode' => 'manual',
+]));
+```
+
+### Error Handling
+API errors throw `Tapsilat\APIException` with the HTTP status (`statusCode`), the body's `code`, the message (`error`,
+from the body's `message` or `error`), per-field `errors`, the body's `status` and the raw body (`rawBody`). A response
+that is not JSON, such as an HTML page from a wrong base URL, also throws.
+```php
+use Tapsilat\APIException;
+
+try {
+    $client->cancelOrder(new CancelOrderRequest("mock-uuid-reference-id"));
+} catch (APIException $e) {
+    echo $e->statusCode . ' [' . $e->code . '] ' . $e->error;
+    print_r($e->errors);
+}
+```
+
 ## System & Webhooks
 
 ### Get System Definitions and Statuses
@@ -350,6 +464,7 @@ $config = $client->getSystemConfig();
 ### Webhook Handling
 
 #### Verify Webhook Signature
+The signature is a hex HMAC-SHA256 of the raw payload, with or without the `sha256=` prefix, compared in constant time.
 ```php
 $payload = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_TAPSILAT_SIGNATURE'];

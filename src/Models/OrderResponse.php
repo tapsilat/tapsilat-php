@@ -10,7 +10,8 @@ class OrderResponse implements \JsonSerializable
         $this->data = is_array($data) ? $data : [];
     }
 
-    public function jsonSerialize(): mixed
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
     {
         return $this->data;
     }
