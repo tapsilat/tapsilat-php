@@ -464,23 +464,47 @@ $config = $client->getSystemConfig();
 ### Webhook Handling
 
 #### Verify Webhook Signature
-The signature is a hex HMAC-SHA256 of the raw payload, with or without the `sha256=` prefix, compared in constant time.
+Tapsilat signs every callback it sends to your callback URLs, and to an order's `payment_success_url` and `payment_failure_url`, with the webhook secret from the panel's callback settings. The `Tapsilat-Signature` header looks like `t=1726480000,v1=5257a8…`: `v1` is the hex HMAC-SHA256 of the timestamp, a dot and the raw body.
+
+`verifyWebhook` checks it in constant time and rejects a timestamp more than 5 minutes from the server clock, so a captured callback cannot be replayed. Pass the raw body, not re-encoded JSON.
 ```php
+use Tapsilat\TapsilatAPI;
+use Tapsilat\WebhookEvent;
+
 $payload = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_TAPSILAT_SIGNATURE'];
+$signature = $_SERVER['HTTP_TAPSILAT_SIGNATURE'] ?? '';
 $secret = 'your_webhook_secret';
 
-$isValid = TapsilatAPI::verifyWebhook($payload, $signature, $secret);
-
-if ($isValid) {
-    // Process webhook
-    $event = json_decode($payload, true);
-    // ...
-} else {
-    // Invalid signature
-    http_response_code(401);
+if (!TapsilatAPI::verifyWebhook($payload, $signature, $secret)) {
+    http_response_code(400);
     exit;
 }
+
+$event = WebhookEvent::fromPayload($payload);
+$event->type;               // "order_lite" (the default), "order", "order_payment_detail", ...
+$event->getReferenceId();   // the order's reference ID, whatever the callback type
+$event->getConversationId();
+$event->getStatus();        // e.g. "Paid", when the callback type carries a status
+
+if ($event->isPaid()) {
+    // fulfil the order
+}
+http_response_code(200);
+```
+
+A different tolerance in seconds can be passed as the fourth argument (`0` disables the timestamp check). A bare hex HMAC of the body, with or without a `sha256=` prefix, is still accepted for signatures made the way earlier SDK versions documented.
+
+#### Order Statuses
+`Tapsilat\OrderStatus` has the numeric status codes that callbacks carry, the names `getOrderStatus()` returns, and the groups most integrations need:
+```php
+use Tapsilat\OrderStatus;
+
+$status = $client->getOrderStatus($referenceId)['status']; // e.g. "Waiting for payment"
+
+OrderStatus::isPaid($status);     // Paid, Completed, Sub merchant payment approved
+OrderStatus::isFailed($status);   // Cancelled, Fraud, Rejected, Failure, Expired, Terminated
+OrderStatus::isRefunded($status); // Refunded, Partially refunded
+OrderStatus::code($status);       // 7; also accepts "7" or 7
 ```
 
 ## Subscription Operations

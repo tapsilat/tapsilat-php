@@ -54,6 +54,12 @@ class TapsilatAPI
     use Concerns\VposMethods;
     use Concerns\MarketplaceMethods;
 
+    /** The header that carries the signature of every callback Tapsilat sends */
+    public const WEBHOOK_SIGNATURE_HEADER = 'Tapsilat-Signature';
+
+    /** How many seconds a callback's signature timestamp may differ from the current time */
+    public const WEBHOOK_TOLERANCE = 300;
+
     private $baseUrl;
     private $apiKey;
     private $timeout;
@@ -855,17 +861,71 @@ class TapsilatAPI
 
 
     /**
-     * Verifies a hex HMAC-SHA256 signature of the raw payload, with or without the "sha256="
-     * prefix, in constant time.
+     * Verifies the Tapsilat-Signature header of a callback against the organization's webhook secret.
+     *
+     * Tapsilat sends "t=<unix timestamp>,v1=<hex HMAC-SHA256 of '<timestamp>.<raw body>'>". The
+     * timestamp must be within $tolerance seconds of $now (time() by default; 0 disables the
+     * check) so that a captured callback cannot be replayed. $payload must be the raw request
+     * body, before any JSON decoding. The comparison takes constant time.
+     *
+     * A bare hex HMAC-SHA256 of the payload, with or without a "sha256=" prefix, is still accepted
+     * for signatures made the way earlier versions of this SDK documented.
+     *
+     * @param string $payload The raw request body
+     * @param string $signature The Tapsilat-Signature header
+     * @param string $secret The webhook secret from the panel's callback settings
+     * @param int $tolerance Seconds; 0 disables the timestamp check
+     * @param int|null $now Unix time to compare the timestamp with
+     * @return bool
      */
-    public static function verifyWebhook($payload, $signature, $secret)
-    {
-        $signature = (string)$signature;
-        if (strpos($signature, 'sha256=') === 0) {
-            $signature = substr($signature, strlen('sha256='));
+    public static function verifyWebhook(
+        $payload,
+        $signature,
+        $secret,
+        $tolerance = self::WEBHOOK_TOLERANCE,
+        $now = null
+    ) {
+        $signature = trim((string)$signature);
+        $secret = (string)$secret;
+        $payload = (string)$payload;
+        if ($signature === '' || $secret === '') {
+            return false;
         }
-        $expectedSignature = hash_hmac('sha256', (string)$payload, (string)$secret);
-        return hash_equals($expectedSignature, strtolower($signature));
+
+        if (strpos($signature, 'sha256=') === 0 || strpos($signature, '=') === false) {
+            if (strpos($signature, 'sha256=') === 0) {
+                $signature = substr($signature, strlen('sha256='));
+            }
+            return hash_equals(hash_hmac('sha256', $payload, $secret), strtolower($signature));
+        }
+
+        $timestamp = null;
+        $signatures = [];
+        foreach (explode(',', $signature) as $part) {
+            $pair = explode('=', trim($part), 2);
+            if (count($pair) !== 2) {
+                continue;
+            }
+            if ($pair[0] === 't') {
+                $timestamp = $pair[1];
+            } elseif ($pair[0] === 'v1') {
+                $signatures[] = strtolower($pair[1]);
+            }
+        }
+        if ($timestamp === null || !ctype_digit($timestamp) || !$signatures) {
+            return false;
+        }
+        if ($tolerance > 0 && abs(($now === null ? time() : (int)$now) - (int)$timestamp) > $tolerance) {
+            return false;
+        }
+
+        $expected = hash_hmac('sha256', $timestamp . '.' . $payload, $secret);
+        foreach ($signatures as $candidate) {
+            if (hash_equals($expected, $candidate)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function chargeOrder(OrderChargeRequest $request)
