@@ -86,7 +86,7 @@ class PanelParityTest extends TestCase
         }
     }
 
-    public function testGrpcErrorsUseTheErrorField()
+    public function testErrorStringWithNumericCodeIsParsed()
     {
         $this->api->on(
             'GET',
