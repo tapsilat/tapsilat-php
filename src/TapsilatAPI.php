@@ -53,6 +53,7 @@ class TapsilatAPI
     use Concerns\SubmerchantSettlementMethods;
     use Concerns\VposMethods;
     use Concerns\MarketplaceMethods;
+    use Concerns\ElementsMethods;
 
     /** The header that carries the signature of every callback Tapsilat sends */
     public const WEBHOOK_SIGNATURE_HEADER = 'Tapsilat-Signature';

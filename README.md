@@ -426,10 +426,47 @@ $client->createMarketplaceApprovalPolicy(new MarketplaceApprovalPolicyInput([
 ]));
 ```
 
+### Tapsilat Elements Sessions
+Tapsilat Elements is the native Android and iOS card sheet. Your backend creates a session with its secret API key and
+passes only the session's `client_secret` to the app, which opens the sheet with it. Card data goes from the sheet to
+Tapsilat encrypted and never reaches your backend.
+```php
+use Tapsilat\Models\ElementsSession;
+use Tapsilat\Models\ElementsSessionCreateRequest;
+
+$session = $client->createElementsSession(new ElementsSessionCreateRequest([
+    'purpose' => ElementsSessionCreateRequest::PURPOSE_PAY,
+    'order_reference_id' => $referenceId,
+    'save_card' => true,
+]));
+// Return the session ID and client secret to your app. Do not log or store the secret.
+echo json_encode(['session_id' => $session->getId(), 'client_secret' => $session->getClientSecret()]);
+
+// Later, read the outcome on your backend instead of trusting the app
+$outcome = $client->getElementsSession($sessionId);
+if ($outcome->getStatus() === ElementsSession::STATUS_SUCCEEDED) {
+    // fulfil the order; $outcome->getCard() has the brand, last four digits and expiry
+}
+
+// Cancel a session that is still waiting for a card
+$client->cancelElementsSession($sessionId);
+```
+A `pay` session needs `order_reference_id`. A `tokenize` session saves a card for `user_id`, with `mode` set to
+`MODE_SECURE` (3D Secure), `MODE_HALF_SECURE` or `MODE_NON_SECURE`. A session's status is one of the
+`ElementsSession::STATUS_` constants (`requires_payment_method`, `processing`, `requires_action`, `succeeded`, `failed`,
+`expired`, `canceled`), and `getLastError()` says why the last attempt failed. `cancelElementsSession()` returns a
+session that is confirming or has completed unchanged.
+
+Only `createElementsSession()` returns the client secret. `var_dump()` and `print_r()` show it as `[redacted]`, while
+`toArray()` and `json_encode()` keep it so that you can send it to the app. Errors carry a stable `code`, such as
+`elements_not_enabled` (403), `session_not_found` (404) or `unavailable` (503), and `retryable`.
+
 ### Error Handling
 API errors throw `Tapsilat\APIException` with the HTTP status (`statusCode`), the body's `code`, the message (`error`,
-from the body's `message` or `error`), per-field `errors`, the body's `status` and the raw body (`rawBody`). A response
-that is not JSON, such as an HTML page from a wrong base URL, also throws.
+from the body's `message` or `error`), per-field `errors`, the body's `status`, the raw body (`rawBody`) and
+`retryable`, true when the error says the request can be retried. Elements routes nest the error as
+`{"error": {"code": "...", "message": "...", "retryable": true}}`; `code`, `error` and `retryable` are read from that
+object. A response that is not JSON, such as an HTML page from a wrong base URL, also throws.
 ```php
 use Tapsilat\APIException;
 

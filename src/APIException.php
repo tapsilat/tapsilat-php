@@ -15,9 +15,18 @@ class APIException extends Exception
     public $errors;
     /** @var string|null The raw response body */
     public $rawBody;
+    /** @var bool True when the error object says the request can be retried, as Elements errors do */
+    public $retryable;
 
-    public function __construct($statusCode, $code, $error, $status = null, $errors = null, $rawBody = null)
-    {
+    public function __construct(
+        $statusCode,
+        $code,
+        $error,
+        $status = null,
+        $errors = null,
+        $rawBody = null,
+        $retryable = false
+    ) {
         parent::__construct(
             "Tapsilat API Error\nstatus_code:{$statusCode}\ncode:{$code}\nerror:{$error}",
             is_numeric($code) ? (int)$code : 0
@@ -28,11 +37,13 @@ class APIException extends Exception
         $this->status = $status;
         $this->errors = $errors;
         $this->rawBody = $rawBody;
+        $this->retryable = (bool)$retryable;
     }
 
     /**
-     * Builds the exception from an error response body such as {"error": "...", "code": 5} or
-     * {"message": "INVALID_REQUEST_BODY", "code": 400000, "errors": {...}}.
+     * Builds the exception from an error response body such as {"error": "...", "code": 5},
+     * {"message": "INVALID_REQUEST_BODY", "code": 400000, "errors": {...}} or, on the Elements
+     * routes, {"error": {"code": "session_not_found", "message": "...", "retryable": false}}.
      */
     public static function fromResponse($statusCode, $body)
     {
@@ -43,9 +54,18 @@ class APIException extends Exception
             return new self($statusCode, -1, $message, null, null, $body);
         }
 
-        $code = array_key_exists('code', $data) && is_scalar($data['code']) ? $data['code'] : -1;
+        $nested = isset($data['error']) && is_array($data['error']) ? $data['error'] : [];
+        if (array_key_exists('code', $data) && is_scalar($data['code'])) {
+            $code = $data['code'];
+        } elseif (isset($nested['code']) && is_scalar($nested['code'])) {
+            $code = $nested['code'];
+        } else {
+            $code = -1;
+        }
         if (isset($data['message']) && is_scalar($data['message'])) {
             $message = (string)$data['message'];
+        } elseif (isset($nested['message']) && is_scalar($nested['message'])) {
+            $message = (string)$nested['message'];
         } elseif (isset($data['error']) && is_scalar($data['error'])) {
             $message = (string)$data['error'];
         } else {
@@ -53,8 +73,9 @@ class APIException extends Exception
         }
         $status = isset($data['status']) && is_scalar($data['status']) ? (string)$data['status'] : null;
         $errors = isset($data['errors']) && is_array($data['errors']) ? $data['errors'] : null;
+        $retryable = isset($nested['retryable']) && $nested['retryable'] === true;
 
-        return new self($statusCode, $code, $message, $status, $errors, $body);
+        return new self($statusCode, $code, $message, $status, $errors, $body, $retryable);
     }
 
     /**

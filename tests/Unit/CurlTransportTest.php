@@ -113,6 +113,16 @@ PHP
         $this->assertSame('', $echo['body']);
     }
 
+    public function testCancelElementsSessionSendsNoBody()
+    {
+        $echo = $this->api()->cancelElementsSession('es_test_8Kq2nV0rX4')->toArray();
+
+        $this->assertSame('POST', $echo['method']);
+        $this->assertSame('/api/v1/elements/sessions/es_test_8Kq2nV0rX4/cancel', $echo['uri']);
+        $this->assertSame('Bearer test-key', $echo['authorization']);
+        $this->assertSame('', $echo['body']);
+    }
+
     public function testErrorStatusesThrowWithTheBodyDetails()
     {
         try {
